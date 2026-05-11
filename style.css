@@ -11,7 +11,7 @@ body {
     font-family: 'Times New Roman', serif;
     line-height: 1.6;
     background-color: #1a1612;
-    background-image: url('bg.png');
+    background-image: url('./img/bg.png');
     color: #d1c2a7;
 }
 
