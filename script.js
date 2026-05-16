@@ -30,7 +30,7 @@ function copyIP() {
     // Game Port / Direct Connect Port
     const ipAddress = "98.165.20.97:7009"; 
     navigator.clipboard.writeText(ipAddress).then(() => {
-        alert("Server IP copied to clipboard! Prepare for battle.");
+        alert("Copied 98.165.20.97:7009 to clipboard! \nPaste it into the Direct Connect Box in Game");
     }).catch(err => {
         console.error('Could not copy text: ', err);
     });

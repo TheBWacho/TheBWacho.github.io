@@ -12,7 +12,7 @@ body {
     line-height: 1.6;
     background-color: #1a1612;
     background-image: url('./img/bg.png');
-    color: #d1c2a7;
+    color: #e8dcc7; /* Brightened text for contrast */
 }
 
 /* ============================================================
@@ -21,7 +21,7 @@ body {
 header, 
 footer {
     background: #2a241e;
-    color: #b33030;
+    color: #e63939; /* Brighter red */
     padding: 2rem;
     text-align: center;
     border-bottom: 4px solid #4a3f35;
@@ -32,9 +32,10 @@ footer {
 
 header h1 {
     font-size: 2.5rem;
-    border-bottom: 2px solid #b33030;
+    border-bottom: 2px solid #e63939;
     display: inline-block;
     padding-bottom: 10px;
+    color: #f2f2f2; /* White header text */
 }
 
 /* ============================================================
@@ -43,7 +44,7 @@ header h1 {
 nav {
     background: #14110e;
     padding: 15px 0 0 0;
-    border-bottom: 3px solid #b33030;
+    border-bottom: 3px solid #e63939;
 }
 
 nav ul {
@@ -58,7 +59,7 @@ nav li {
 
 nav a {
     display: block;
-    color: #a69a85;
+    color: #c4b7a1;
     padding: 12px 25px;
     text-decoration: none;
     background: #362f27;
@@ -71,15 +72,15 @@ nav a {
 }
 
 nav a:hover {
-    background: #b33030;
+    background: #e63939;
     color: #fff;
     transform: translateY(-3px);
 }
 
 nav a.active {
     background: #4e443a;
-    color: #ffd700;
-    border-color: #b33030;
+    color: #ffde33; /* Brighter gold active tab */
+    border-color: #e63939;
     border-bottom: 3px solid #4e443a;
     margin-bottom: -3px;
 }
@@ -104,7 +105,7 @@ main {
 }
 
 .tab-content {
-    display: none; /* Controlled via JavaScript */
+    display: none; 
     animation: fadeIn 0.4s;
 }
 
@@ -126,9 +127,8 @@ main {
 }
 
 /* Typography & Lists */
-h2, 
-h3 {
-    color: #b33030;
+h2, h3 {
+    color: #e63939;
     margin-bottom: 15px;
     text-transform: uppercase;
 }
@@ -143,7 +143,11 @@ h3 {
     border-bottom: 1px solid #333;
 }
 
+/* ============================================================
+   BUTTONS (Perfectly Matched Sizes)
+   ============================================================ */
 .btn-copy {
+    display: block;
     background: #b33030;
     color: white;
     border: none;
@@ -151,12 +155,37 @@ h3 {
     cursor: pointer;
     width: 100%;
     margin-top: 10px;
+    font-family: inherit;
+    font-size: 1rem;
     font-weight: bold;
     text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
 }
 
 .btn-copy:hover {
-    background: #e63946;
+    background: #e63939;
+}
+
+.btn-discord {
+    display: block;
+    background: #5865F2; /* Official Discord Blurple */
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    margin-top: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.btn-discord:hover {
+    background: #4752C4;
 }
 
 /* ============================================================
@@ -164,7 +193,7 @@ h3 {
    ============================================================ */
 .rule-intro {
     font-style: italic;
-    color: #ffd700;
+    color: #ffde33;
     margin-bottom: 20px;
     text-align: center;
 }
@@ -173,12 +202,12 @@ h3 {
     background: rgba(0, 0, 0, 0.3);
     padding: 15px;
     margin-bottom: 20px;
-    border-left: 3px solid #b33030;
+    border-left: 3px solid #e63939;
 }
 
 .rule-block h3 {
     font-size: 1.2rem;
-    color: #a69a85;
+    color: #c4b7a1;
     margin-bottom: 10px;
     border-bottom: 1px solid #4a3f35;
 }
@@ -197,8 +226,8 @@ h3 {
     text-align: center;
     margin-top: 30px;
     padding: 15px;
-    border: 1px double #b33030;
-    color: #b33030;
+    border: 1px double #e63939;
+    color: #e63939;
     font-weight: bold;
 }
 
