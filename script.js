@@ -30,7 +30,7 @@ function copyIP() {
     // Game Port / Direct Connect Port
     const ipAddress = "98.165.20.97:7009"; 
     navigator.clipboard.writeText(ipAddress).then(() => {
-        alert("Copied 98.165.20.97:7009 to clipboard! \nPaste it into the Direct Connect Box in Game");
+        alert("Copied 98.165.20.97:7009 to clipboard! Paste it into the Direct Connect Box in Game");
     }).catch(err => {
         console.error('Could not copy text: ', err);
     });
@@ -53,9 +53,11 @@ async function loadMods() {
         let html = '<ul class="race-list">'; 
         mods.forEach(mod => {
             if (mod.url !== "") {
-                html += `<li><a href="${mod.url}" target="_blank" style="color: #a69a85; text-decoration: none; border-bottom: 1px dotted #b33030; transition: color 0.2s;"><strong>${mod.name}</strong></a></li>`;
+                // FIXED: Changed mod.name to mod.title
+                html += `<li><a href="${mod.url}" target="_blank" style="color: #a69a85; text-decoration: none; border-bottom: 1px dotted #b33030; transition: color 0.2s;"><strong>${mod.title}</strong></a></li>`;
             } else {
-                html += `<li><strong>${mod.name}</strong></li>`;
+                // FIXED: Changed mod.name to mod.title
+                html += `<li><strong>${mod.title}</strong></li>`;
             }
         });
         html += '</ul>';
@@ -68,10 +70,9 @@ async function loadMods() {
 }
 
 /**
- * Checks if the game server is online via Google Apps Script Proxy (Bypasses CORS)
+ * Checks if the game server is online via Google Apps Script Proxy (Now using BattleMetrics)
  */
 async function checkServerStatus() {
-  // Point to Google Web App, adding "?action=status" so Google fetches from Steam using port 25575
   const url = SHEET_API_URL + "?action=status";
   const statusText = document.getElementById('status-text');
   
@@ -83,12 +84,15 @@ async function checkServerStatus() {
     const response = await fetch(url);
     const data = await response.json();
     
-    // --> THIS WILL PRINT STEAM'S EXACT ANSWER IN YOUR BROWSER CONSOLE (F12) <--
-    console.log("Steam API Response:", data); 
+    // --> THIS WILL PRINT BATTLEMETRICS EXACT ANSWER IN YOUR BROWSER CONSOLE (F12) <--
+    console.log("BattleMetrics API Response:", data); 
     
-    // Check if Google successfully returned the Steam data
-    if (data.response && data.response.success && data.response.servers && data.response.servers.length > 0) {
-      statusText.innerText = "Online";
+    // Check if BattleMetrics successfully returned the data and it says online
+    if (data && data.data && data.data.attributes && data.data.attributes.status === "online") {
+      const players = data.data.attributes.players;
+      const maxPlayers = data.data.attributes.maxPlayers;
+
+      statusText.innerText = `Online (${players}/${maxPlayers})`;
       statusText.style.color = "#4CAF50"; // Conan green
     } else {
       statusText.innerText = "Offline";
