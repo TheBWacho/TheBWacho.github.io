@@ -24,14 +24,12 @@
     <main>
         <div class="content-area">
             
-            <!-- Home Tab -->
             <section id="home" class="tab-content">
                 <h2>Message from the Admin</h2>
                 <p>Welcome to our custom Conan Exiles experience. Survive, build, and dominate in a land where custom lore meets brutal combat.</p>
-                <p>Check the tabs above to explore our unique race system and the current mod configuration.</p>
+                <p>Check the tabs above to explore our unique race system, the current mod configuration, and our server rules.</p>
             </section>
 
-            <!-- Races Tab -->
             <section id="races" class="tab-content">
                 <h2>Custom Races</h2>
                 <p>Choose your lineage wisely. Each race brings its own history to the Exiled Lands.</p>
@@ -45,16 +43,14 @@
                 </ul>
             </section>
 
-            <!-- Mods Tab -->
             <section id="mods" class="tab-content">
                 <h2>Server Mod List</h2>
-                <p>Our server uses a curated list of mods to enhance gameplay and roleplay immersion.</p>
+                <p>Our server uses a curated list of mods to enhance gameplay and roleplay immersion. Click any mod to view its Workshop page.</p>
                 <div id="mod-container">
-                    <p><em>Loading mod data from Steam API...</em></p>
+                    <p><em>Loading mod data from the archives...</em></p>
                 </div>
             </section>
 
-            <!-- Rules Tab -->
             <section id="rules" class="tab-content">
                 <h2>Server Laws & Code of Conduct</h2>
                 <p class="rule-intro">By entering the Exiled Lands, you agree to the following digital signature. Failure to comply results in exile (ban).</p>
@@ -94,7 +90,7 @@
                         <li><strong>Theft:</strong> Stealing is strictly prohibited and can lead to a ban.</li>
                         <li><strong>RP/ERP:</strong> This is an RP server. ERP must be private (at base) and kept to whispers. No public nudity.</li>
                         <li><strong>Absences:</strong> Notify Admins in Discord if you will be away for more than 10 days.</li>
-                        <li><strong>Admin Authority:</strong> Do not lawyer the rules. Admin words are final. Toxic behavior results in an immediate ban.</li>
+                        <li><strong>Admin Authority:</strong> Do not lawyer the rules. Admin words are final. Toxic behavior or arguing results in an immediate ban.</li>
                     </ul>
                 </div>
 
@@ -104,17 +100,19 @@
             </section>
         </div>
 
-        <!-- Sidebar -->
         <aside class="sidebar">
             <h3>Server Info</h3>
-            <p><strong>Status:</strong> <span id="status-text" style="color: #4CAF50;">Online</span></p>
+            <p><strong>Status:</strong> <span id="status-text" style="color: #a69a85;">Checking...</span></p>
             <p><strong>Map:</strong> The Exiled Lands</p>
+            
             <button class="btn-copy" onclick="copyIP()">Copy Server IP</button>
+            
+            <a href="https://discord.gg/gmgJWXzHSC" target="_blank" class="btn-discord">Join Our Discord</a>
         </aside>
     </main>
 
     <footer>
-        <p>&copy; 2026 ⯨ᗷᗯᗩᑕᕼO⯩</p>
+        <p>&copy; 2026 Conan Server Community</p>
     </footer>
 
     <script src="script.js"></script>
