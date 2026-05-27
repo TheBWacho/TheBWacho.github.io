@@ -112,7 +112,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 Conan Server Community</p>
+        <p>&copy; 2026 - ᗷᗯᗩᑕᕼO -</p>
     </footer>
 
     <script src="script.js"></script>
