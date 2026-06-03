@@ -1,4 +1,14 @@
 /* ============================================================
+   IMPORT CUSTOM FONTS
+   ============================================================ */
+@font-face {
+    font-family: 'Crom';
+    src: url('./font/Crom.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* ============================================================
    1. GLOBAL RESETS & BACKGROUND
    ============================================================ */
 * {
@@ -10,9 +20,13 @@
 body {
     font-family: 'Times New Roman', serif;
     line-height: 1.6;
-    background-color: #1a1612;
-    background-image: url('./img/bg.png');
-    color: #e8dcc7; /* Brightened text for contrast */
+    background-color: #121519; /* Deep slate instead of warm brown */
+    background-image: url('./img/Crom BG.png');
+    background-size: cover;          /* Scales image to fill screen */
+    background-repeat: no-repeat;    /* Prevents image tiling */
+    background-position: center;     /* Centers the image */
+    background-attachment: fixed;  
+    color: #d0def0; /* Icy off-white text for contrast */
 }
 
 /* ============================================================
@@ -20,19 +34,20 @@ body {
    ============================================================ */
 header, 
 footer {
-    background: #2a241e;
-    color: #e63939; /* Brighter red */
+    background: #1c232a; /* Dark cool slate */
+    color: #82a8cf; /* Frosty steel blue */
     padding: 2rem;
     text-align: center;
-    border-bottom: 4px solid #4a3f35;
+    border-bottom: 4px solid #324152; /* Metallic blue-gray border */
     text-transform: uppercase;
     letter-spacing: 3px;
     text-shadow: 2px 2px 4px #000;
 }
 
 header h1 {
+    font-family: 'Crom', serif; /* Custom font applied here */
     font-size: 2.5rem;
-    border-bottom: 2px solid #e63939;
+    border-bottom: 2px solid #82a8cf; /* Frosty steel blue */
     display: inline-block;
     padding-bottom: 10px;
     color: #f2f2f2; /* White header text */
@@ -42,9 +57,9 @@ header h1 {
    3. TAB NAVIGATION
    ============================================================ */
 nav {
-    background: #14110e;
+    background: #0b0d10; /* Near black charcoal */
     padding: 15px 0 0 0;
-    border-bottom: 3px solid #e63939;
+    border-bottom: 3px solid #638cb3; /* Ice blue border */
 }
 
 nav ul {
@@ -59,11 +74,11 @@ nav li {
 
 nav a {
     display: block;
-    color: #c4b7a1;
+    color: #a3bfd9; /* Muted ice blue */
     padding: 12px 25px;
     text-decoration: none;
-    background: #362f27;
-    border: 2px solid #4a3f35;
+    background: #25313d; /* Cool metal background */
+    border: 2px solid #324152; /* Metallic blue-gray border */
     border-bottom: none;
     border-radius: 5px 20px 0 0;
     text-transform: uppercase;
@@ -72,16 +87,16 @@ nav a {
 }
 
 nav a:hover {
-    background: #e63939;
+    background: #638cb3; /* Ice blue hover */
     color: #fff;
     transform: translateY(-3px);
 }
 
 nav a.active {
-    background: #4e443a;
-    color: #ffde33; /* Brighter gold active tab */
-    border-color: #e63939;
-    border-bottom: 3px solid #4e443a;
+    background: #3a4c5e; /* Lighter cool metal */
+    color: #ffffff; /* Piercing white for active tab */
+    border-color: #638cb3; /* Ice blue border */
+    border-bottom: 3px solid #3a4c5e;
     margin-bottom: -3px;
 }
 
@@ -99,8 +114,8 @@ main {
 .content-area {
     flex: 3;
     padding: 30px;
-    background: rgba(42, 36, 30, 0.9);
-    border: 2px solid #4a3f35;
+    background: rgba(28, 35, 42, 0.9); /* Translucent cool slate */
+    border: 2px solid #324152; /* Metallic blue-gray */
     box-shadow: inset 0 0 20px #000;
 }
 
@@ -121,14 +136,14 @@ main {
 .sidebar {
     flex: 1;
     margin-left: 20px;
-    background: #1e1a15;
+    background: #161c22; /* Very dark slate */
     padding: 20px;
-    border: 1px dashed #5d5145;
+    border: 1px dashed #405466; /* Steel gray border */
 }
 
 /* Typography & Lists */
 h2, h3 {
-    color: #e63939;
+    color: #82a8cf; /* Frosty steel blue */
     margin-bottom: 15px;
     text-transform: uppercase;
 }
@@ -140,7 +155,7 @@ h2, h3 {
 
 .race-list li {
     padding: 5px 0;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #2a3540; /* Darker border */
 }
 
 /* ============================================================
@@ -148,7 +163,7 @@ h2, h3 {
    ============================================================ */
 .btn-copy {
     display: block;
-    background: #b33030;
+    background: #466785; /* Muted steel blue */
     color: white;
     border: none;
     padding: 10px;
@@ -164,7 +179,7 @@ h2, h3 {
 }
 
 .btn-copy:hover {
-    background: #e63939;
+    background: #638cb3; /* Ice blue hover */
 }
 
 .btn-discord {
@@ -193,23 +208,23 @@ h2, h3 {
    ============================================================ */
 .rule-intro {
     font-style: italic;
-    color: #ffde33;
+    color: #baddff; /* Pale icy highlight */
     margin-bottom: 20px;
     text-align: center;
 }
 
 .rule-block {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
     padding: 15px;
     margin-bottom: 20px;
-    border-left: 3px solid #e63939;
+    border-left: 3px solid #82a8cf; /* Frosty steel blue */
 }
 
 .rule-block h3 {
     font-size: 1.2rem;
-    color: #c4b7a1;
+    color: #d0def0; /* Icy off-white */
     margin-bottom: 10px;
-    border-bottom: 1px solid #4a3f35;
+    border-bottom: 1px solid #324152; /* Metallic blue-gray */
 }
 
 .rule-block ul {
@@ -226,8 +241,8 @@ h2, h3 {
     text-align: center;
     margin-top: 30px;
     padding: 15px;
-    border: 1px double #e63939;
-    color: #e63939;
+    border: 1px double #82a8cf; /* Frosty steel blue */
+    color: #82a8cf;
     font-weight: bold;
 }
 
