@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exiled Lands Server Portal</title>
+    <title>Crom's Bitter Indifference</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <h1>Exiled Lands</h1>
+        <h1>Croms Bitter Indifference</h1>
     </header>
 
     <nav>
