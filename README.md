@@ -18,6 +18,7 @@
             <li><a href="#" onclick="openTab(event, 'races')">Races</a></li>
             <li><a href="#" onclick="openTab(event, 'mods')">Mod List</a></li>
             <li><a href="#" onclick="openTab(event, 'rules')">Rules</a></li>
+
         </ul>
     </nav>
 
@@ -32,7 +33,7 @@
 
             <section id="races" class="tab-content">
                 <h2>Custom Races</h2>
-                <p>Choose your lineage wisely. Each race brings its own history to the Exiled Lands.</p>
+                <p>These are just placeholder races. They have not been implemented yet</p>
                 <ul class="race-list">
                     <li><strong>Human:</strong> Adaptable and ambitious.</li>
                     <li><strong>Elven:</strong> Ancient keepers of magic.</li>
@@ -44,7 +45,7 @@
             </section>
 
             <section id="mods" class="tab-content">
-                <h2>Server Mod List</h2>
+                <h2>Server Mod List - <a href="steam://openurl/https://steamcommunity.com/sharedfiles/filedetails/?id=3732871470">Steam Collection for Our Modlist</a></h2>
                 <p>Our server uses a curated list of mods to enhance gameplay and roleplay immersion. Click any mod to view its Workshop page.</p>
                 <div id="mod-container">
                     <p><em>Loading mod data from the archives...</em></p>
@@ -108,6 +109,7 @@
             <button class="btn-copy" onclick="copyIP()">Copy Server IP</button>
             
             <a href="https://discord.gg/gmgJWXzHSC" target="_blank" class="btn-discord">Join Our Discord</a>
+			<button class="btn-copy" onclick="window.open('BasePlanner.html', '_blank');">BasePlanner</button>
         </aside>
     </main>
 
