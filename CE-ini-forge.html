@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crom's Gaming — Conan Exiles Enhanced Server Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-obsidian: #0b0a09;
+    --bg-stone: #141210;
+    --bg-slab: #1c1815;
+    --bg-input: #0e0c0a;
+    --border-iron: #3b3126;
+    --border-bronze: #6e5332;
+    --gold: #d49b35;
+    --gold-bright: #f2be5c;
+    --ember: #c84b1a;
+    --ember-glow: rgba(200, 75, 26, 0.25);
+    --gold-glow: rgba(212, 155, 53, 0.16);
+    --text-parchment: #ebe3d5;
+    --text-ash: #9e9282;
+    --emerald: #3d9956;
+    --crimson: #b83737;
+    --sorcery: #3b82a6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-obsidian);
+    background-image:
+      radial-gradient(ellipse at top, rgba(212, 155, 53, 0.08) 0%, transparent 55%),
+      radial-gradient(circle at bottom right, rgba(200, 75, 26, 0.07) 0%, transparent 50%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 2px, transparent 2px, transparent 8px);
+    color: var(--text-parchment);
+    line-height: 1.45;
+    padding: 18px;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+
+  /* Forged Frame Header */
+  header {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(180deg, #1d1814 0%, #120f0d 100%);
+    border: 1px solid var(--border-bronze);
+    box-shadow: inset 0 1px 0 rgba(242, 190, 92, 0.18), 0 10px 30px rgba(0, 0, 0, 0.75);
+    border-radius: 4px;
+    padding: 18px 24px;
+    margin-bottom: 18px;
+  }
+
+  header::before, header::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--gold);
+    pointer-events: none;
+  }
+  header::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  header::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+  .brand h1 {
+    font-family: 'Cinzel', Georgia, "Times New Roman", serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+    text-shadow: 0 2px 10px rgba(212, 155, 53, 0.35);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand h1 span.badge {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(180deg, rgba(200, 75, 26, 0.3), rgba(120, 35, 10, 0.45));
+    color: #ffad85;
+    border: 1px solid var(--ember);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+
+  .brand p {
+    font-size: 0.85rem;
+    color: var(--text-ash);
+    margin-top: 4px;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Forged Buttons */
+  button {
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: 0.7px;
+    background: linear-gradient(180deg, #27211b 0%, #191511 100%);
+    color: var(--text-parchment);
+    border: 1px solid var(--border-bronze);
+    border-radius: 3px;
+    padding: 9px 15px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.5);
+    transition: all 0.16s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  button:hover:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    background: linear-gradient(180deg, #322921 0%, #201a15 100%);
+    box-shadow: 0 0 12px var(--gold-glow);
+  }
+
+  button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  button.primary {
+    background: linear-gradient(180deg, #b86c1d 0%, #7d420c 100%);
+    border-color: var(--gold-bright);
+    color: #fff8eb;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  }
+
+  button.primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #d17d24 0%, #944f10 100%);
+    box-shadow: 0 0 16px rgba(212, 155, 53, 0.4);
+  }
+
+  button.success {
+    background: linear-gradient(180deg, #2f7a44 0%, #1d522c 100%);
+    border-color: #5bc277;
+    color: #f0fff4;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  }
+
+  button.success:hover:not(:disabled) {
+    background: linear-gradient(180deg, #399152 0%, #246336 100%);
+    box-shadow: 0 0 16px rgba(61, 153, 86, 0.4);
+  }
+
+  button.sites-btn {
+    background: linear-gradient(180deg, #2b4c7e 0%, #193154 100%);
+    border-color: #6ea3f0;
+    color: #eef5ff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  }
+
+  button.sites-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, #375f9c 0%, #213f6b 100%);
+    box-shadow: 0 0 16px rgba(110, 163, 240, 0.4);
+  }
+
+  /* Altar Dropzone */
+  .dropzone {
+    position: relative;
+    border: 1px dashed var(--border-bronze);
+    background: linear-gradient(180deg, rgba(28, 24, 21, 0.85), rgba(16, 14, 12, 0.95));
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 16px;
+    box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.65);
+  }
+
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--gold-bright);
+    border-style: solid;
+    background: radial-gradient(circle at center, rgba(212, 155, 53, 0.12), rgba(16, 14, 12, 0.95));
+    box-shadow: 0 0 20px rgba(212, 155, 53, 0.15);
+  }
+
+  .dropzone strong {
+    font-family: 'Cinzel', Georgia, serif;
+    color: var(--gold-bright);
+    letter-spacing: 0.6px;
+    font-size: 0.95rem;
+  }
+
+  .dropzone p {
+    font-size: 0.83rem;
+    color: var(--text-ash);
+    margin-top: 5px;
+  }
+
+  /* Relic File Pills */
+  .file-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+
+  .file-pill {
+    background: linear-gradient(180deg, #1d1915, #14110e);
+    border: 1px solid var(--border-iron);
+    border-radius: 3px;
+    padding: 7px 11px;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+
+  .file-pill:hover {
+    border-color: var(--border-bronze);
+  }
+
+  .file-pill.active {
+    border-color: var(--gold);
+    background: linear-gradient(180deg, #2b2218, #1a140e);
+    box-shadow: 0 0 12px var(--gold-glow);
+  }
+
+  .file-pill .dot {
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    background: var(--emerald);
+  }
+
+  .file-pill.modified .dot {
+    background: var(--ember);
+    box-shadow: 0 0 6px var(--ember);
+  }
+
+  .file-pill .dl-single {
+    font-family: 'Inter', sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 2px 6px;
+    font-size: 0.78rem;
+    color: var(--gold);
+  }
+
+  .file-pill .dl-single:hover {
+    color: var(--gold-bright);
+    text-decoration: underline;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Search & Filter Toolbar */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-stone);
+    border: 1px solid var(--border-iron);
+    padding: 10px 14px;
+    border-radius: 4px;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-bronze);
+    color: var(--text-parchment);
+    padding: 8px 12px;
+    border-radius: 3px;
+    font-size: 0.88rem;
+  }
+
+  .search-box input::placeholder {
+    color: #6e6356;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 8px var(--gold-glow);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .filter-group label {
+    color: var(--text-parchment);
+    font-size: 0.84rem;
+    user-select: none;
+  }
+
+  /* Carved Stone Category Tabs */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-bronze);
+    padding-bottom: 10px;
+  }
+
+  .tab {
+    font-family: 'Cinzel', Georgia, serif;
+    background: rgba(20, 18, 16, 0.6);
+    border: 1px solid var(--border-iron);
+    color: var(--text-ash);
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 0.76rem;
+    letter-spacing: 0.6px;
+    box-shadow: none;
+  }
+
+  .tab:hover {
+    color: var(--text-parchment);
+    border-color: var(--border-bronze);
+    background: var(--bg-slab);
+  }
+
+  .tab.active {
+    background: linear-gradient(180deg, #2e2318, #1c1610);
+    color: var(--gold-bright);
+    border-color: var(--gold);
+    box-shadow: 0 0 10px var(--gold-glow);
+  }
+
+  /* Settings Grid & Stone Slabs */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(425px, 1fr));
+    gap: 12px;
+  }
+
+  @media (max-width: 500px) {
+    .settings-grid { grid-template-columns: 1fr; }
+  }
+
+  .setting-card {
+    background: linear-gradient(180deg, #1b1714 0%, #13100e 100%);
+    border: 1px solid var(--border-iron);
+    border-radius: 3px;
+    padding: 13px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 3px 10px rgba(0,0,0,0.45);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .setting-card:hover {
+    border-color: var(--border-bronze);
+  }
+
+  .setting-card.is-modified {
+    border-color: var(--border-bronze);
+    border-left: 3px solid var(--ember);
+    background: linear-gradient(180deg, #221914 0%, #15100d 100%);
+  }
+
+  .setting-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .setting-title-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: help;
+  }
+
+  .setting-name {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--text-parchment);
+    border-bottom: 1px dotted var(--border-bronze);
+    transition: color 0.15s;
+  }
+
+  .setting-title-wrap:hover .setting-name {
+    color: var(--gold-bright);
+    border-bottom-color: var(--gold-bright);
+  }
+
+  .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    transform: rotate(45deg);
+    background: var(--bg-input);
+    border: 1px solid var(--border-bronze);
+    color: var(--gold);
+    font-size: 0.68rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .info-icon span {
+    transform: rotate(-45deg);
+    display: block;
+  }
+
+  .setting-meta {
+    font-size: 0.7rem;
+    color: var(--text-ash);
+    background: var(--bg-input);
+    border: 1px solid var(--border-iron);
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  /* Lore Scroll Tooltip */
+  .tooltip-popup {
+    position: fixed;
+    z-index: 9999;
+    max-width: 350px;
+    background: linear-gradient(180deg, #1f1914 0%, #110e0b 100%);
+    border: 1px solid var(--gold);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85), 0 0 15px rgba(212, 155, 53, 0.2);
+    border-radius: 4px;
+    padding: 11px 13px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    font-size: 0.82rem;
+  }
+
+  .tooltip-popup.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .tooltip-popup .tt-title {
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 700;
+    color: var(--gold-bright);
+    border-bottom: 1px solid var(--border-bronze);
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+  }
+
+  .tooltip-popup .tt-desc {
+    color: var(--text-parchment);
+    margin-bottom: 7px;
+  }
+
+  .tooltip-popup .tt-scale {
+    color: #f3c978;
+    font-size: 0.77rem;
+    background: rgba(212, 155, 53, 0.12);
+    border-left: 2px solid var(--gold);
+    padding: 5px 8px;
+    border-radius: 2px;
+  }
+
+  /* Forged Sliders & Raw Inputs */
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 6px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-iron);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--ember));
+    border: 1px solid #fff3d6;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(212, 155, 53, 0.6);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--ember));
+    border: 1px solid #fff3d6;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(212, 155, 53, 0.6);
+  }
+
+  input[type="number"], input[type="text"], textarea {
+    background: var(--bg-input);
+    border: 1px solid var(--border-iron);
+    color: var(--gold-bright);
+    border-radius: 3px;
+    padding: 6px 9px;
+    font-size: 0.85rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  input[type="number"]:focus, input[type="text"]:focus, textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 8px var(--gold-glow);
+  }
+
+  .raw-num {
+    width: 118px;
+    text-align: right;
+  }
+
+  .full-text {
+    width: 100%;
+    color: var(--text-parchment);
+  }
+
+  textarea.full-text {
+    min-height: 64px;
+    resize: vertical;
+  }
+
+  /* Toggle Switch */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: rgba(14, 12, 10, 0.6);
+    border: 1px solid var(--border-iron);
+    padding: 5px 10px;
+    border-radius: 3px;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+  }
+
+  .switch input { opacity: 0; width: 0; height: 0; }
+
+  .slider-toggle {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #1c1414;
+    border: 1px solid var(--border-iron);
+    transition: .2s;
+    border-radius: 2px;
+  }
+
+  .slider-toggle:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-ash);
+    transition: .2s;
+    border-radius: 1px;
+  }
+
+  input:checked + .slider-toggle {
+    background-color: rgba(61, 153, 86, 0.25);
+    border-color: var(--emerald);
+  }
+
+  input:checked + .slider-toggle:before {
+    transform: translateX(22px);
+    background-color: #6ee08d;
+    box-shadow: 0 0 8px rgba(110, 224, 141, 0.6);
+  }
+
+  .reset-btn {
+    font-family: 'Inter', sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--text-ash);
+    font-size: 0.74rem;
+    padding: 2px 5px;
+  }
+
+  .reset-btn:hover {
+    color: #ff7b72;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    background: var(--bg-stone);
+    border: 1px solid var(--border-iron);
+    border-radius: 4px;
+    color: var(--text-ash);
+  }
+
+  .empty-state h3 {
+    font-family: 'Cinzel', Georgia, serif;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  /* Google Sites Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.82);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    padding: 16px;
+  }
+
+  .modal-backdrop.open {
+    display: flex;
+  }
+
+  .modal-card {
+    background: linear-gradient(180deg, #1f1a15 0%, #120f0c 100%);
+    border: 1px solid var(--gold);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.9);
+    border-radius: 4px;
+    max-width: 640px;
+    width: 100%;
+    padding: 22px;
+  }
+
+  .modal-card h2 {
+    font-family: 'Cinzel', Georgia, serif;
+    color: var(--gold-bright);
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+  }
+
+  .modal-card ol {
+    margin: 12px 0 16px 20px;
+    font-size: 0.88rem;
+    color: var(--text-parchment);
+  }
+
+  .modal-card li {
+    margin-bottom: 6px;
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(180deg, #261f18, #14110d);
+    border: 1px solid var(--gold);
+    color: var(--gold-bright);
+    padding: 10px 16px;
+    border-radius: 3px;
+    font-size: 0.85rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.75);
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.2s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>Conan Exiles Enhanced <span class="badge">Server INI Forge</span></h1>
+      <p>Upload one or multiple .ini files, tune rates via forged sliders or raw numbers, hover names for lore &amp; scaling, and save.</p>
+    </div>
+    <div class="header-actions">
+      <button id="btnGoogleSites" class="sites-btn" title="Copy full HTML or open Google Sites to embed this page">Upload to Google Sites</button>
+      <button id="btnLoadSamples" title="Load pre-configured Crom's Gaming INI files">Load Sample Preset</button>
+      <button id="btnUploadTrigger" class="primary">Upload .INI File(s)</button>
+      <button id="btnDownloadAll" class="success" disabled>Save All (.zip)</button>
+      <input type="file" id="fileInput" accept=".ini,.txt" multiple hidden>
+    </div>
+  </header>
+
+  <div class="dropzone" id="dropzone">
+    <div><strong>Select Server .INI Scrolls</strong> or drag &amp; drop them onto the altar</div>
+    <p>Supports ServerSettings.ini, Engine.ini, Game.ini, DedicatedServerLauncher.ini, Input.ini, and ModHttp.ini — individually or together.</p>
+  </div>
+
+  <div class="file-bar" id="fileBar"></div>
+
+  <div id="editorArea" style="display:none;">
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search setting, value, or effect (e.g. Harvest, XP, Thrall, Decay, Port)...">
+      </div>
+      <div class="filter-group">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="onlyModified" style="accent-color: var(--gold);"> Modified Only (<span id="modCount">0</span>)
+        </label>
+        <button id="btnDownloadCurrent">Save Current .INI</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="categoryTabs"></div>
+    <div class="settings-grid" id="settingsGrid"></div>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <h3>The Altar Awaits Your Scrolls</h3>
+    <p style="margin-top:6px;">Drop your server <code>.ini</code> files above or click <strong>Load Sample Preset</strong> to inspect and forge your configuration.</p>
+  </div>
+</div>
+
+<!-- Google Sites Publish Helper Modal -->
+<div class="modal-backdrop" id="sitesModal">
+  <div class="modal-card">
+    <h2>Embed &amp; Publish to Google Sites</h2>
+    <p style="font-size:0.85rem; color:var(--text-ash);">Google Sites blocks external web uploads via API, so embedding takes one click to copy the complete self-contained HTML and paste it straight into your Google Site:</p>
+    <ol>
+      <li>Click <strong>Copy Embed Code &amp; Open Google Sites</strong> below (copies this entire app's HTML to your clipboard and opens <code>sites.google.com</code>).</li>
+      <li>Open your site in Google Sites and go to <strong>Insert → Embed → Embed code</strong>.</li>
+      <li>Press <strong>Ctrl+V</strong> to paste, click <strong>Next → Insert</strong>, stretch the frame full-width, and hit <strong>Publish</strong>.</li>
+    </ol>
+    <div class="modal-actions">
+      <button id="btnCloseSitesModal">Close</button>
+      <button id="btnCopyOnly" class="primary">Copy HTML Code Only</button>
+      <button id="btnCopyAndOpenSites" class="sites-btn">Copy Code &amp; Open Google Sites ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Hover Tooltip -->
+<div class="tooltip-popup" id="tooltip">
+  <div class="tt-title" id="ttTitle"></div>
+  <div class="tt-desc" id="ttDesc"></div>
+  <div class="tt-scale" id="ttScale"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================================
+// 1. SETTING METADATA DICTIONARY (Tooltips, Categories, Slider Ranges)
+// ============================================================================
+const SETTING_DOCS = {
+  HarvestAmountMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Multiplies the amount of resources gathered from trees, rocks, nodes, and corpses.",
+    scale: "Slider: 0.1x to 10x (Raw box accepts any number). Higher = more resources per swing.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  ItemSpoilRateScale: {
+    cat: "Survival & Stamina",
+    desc: "Controls how fast food and perishable items decay in inventories and preservation boxes.",
+    scale: "0 = Never spoils | 0.5 = Half speed (lasts 2x longer) | 1.0 = Default | Higher = spoils faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  FuelBurnTimeMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Multiplies how long fuel (wood, coal, oil) burns inside crafting stations and campfires.",
+    scale: "Higher = fuel lasts much longer (e.g., 10 = 10x burn duration). Lower = burns out faster.",
+    min: 0.1, max: 20, step: 0.1
+  },
+  CraftingCostMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Multiplies the material cost required to craft items and building pieces.",
+    scale: "Lower = cheaper crafting (0.1 = 10% normal cost) | 1.0 = Default | Higher = more expensive.",
+    min: 0.05, max: 5, step: 0.05
+  },
+  ItemConvertionMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Controls how fast raw materials smelt, tan, or process inside crafting benches (furnaces, tanneries).",
+    scale: "Lower = FASTER crafting speed (0.1 = 10x faster) | 1.0 = Default | Higher = slower.",
+    min: 0.01, max: 5, step: 0.05
+  },
+  ThrallConversionMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Controls how fast thralls break on the Wheel of Pain.",
+    scale: "0 = Instant conversion | 0.1 = 10x faster | 1.0 = Default | Higher = takes longer.",
+    min: 0, max: 5, step: 0.05
+  },
+  AnimalPenCraftingTimeMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Controls how fast pets and mounts mature inside Animal Pens and Stables.",
+    scale: "Lower = FASTER taming (0.001 = near instant) | 1.0 = Default | Higher = slower.",
+    min: 0, max: 5, step: 0.01
+  },
+  PlayerXPRateMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Global multiplier applied to all experience gained by players.",
+    scale: "1.0 = Default | 10 = 10x faster leveling. Higher = faster XP.",
+    min: 0.1, max: 25, step: 0.5
+  },
+  PlayerXPKillMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Multiplier for XP earned specifically from killing monsters and NPCs.",
+    scale: "Higher = more XP per kill. Stacks with PlayerXPRateMultiplier.",
+    min: 0.1, max: 25, step: 0.5
+  },
+  PlayerXPHarvestMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Multiplier for XP earned from harvesting resources.",
+    scale: "Higher = more XP per swing on nodes/trees.",
+    min: 0.1, max: 25, step: 0.5
+  },
+  PlayerXPCraftMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Multiplier for XP earned when crafting items.",
+    scale: "Higher = more XP per item crafted.",
+    min: 0.1, max: 25, step: 0.5
+  },
+  PlayerXPTimeMultiplier: {
+    cat: "Progression & Harvest",
+    desc: "Multiplier for passive XP earned simply by surviving over time.",
+    scale: "Higher = more passive XP ticks.",
+    min: 0.1, max: 25, step: 0.5
+  },
+  PlayerIdleThirstMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "How fast thirst drains while standing still or doing non-strenuous activities.",
+    scale: "0 = No thirst drain | 0.1 = 10% drain | 1.0 = Default | Higher = drains faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  PlayerActiveThirstMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "How fast thirst drains while running, fighting, or climbing.",
+    scale: "0 = No thirst drain | 0.1 = 10% drain | 1.0 = Default | Higher = drains faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  PlayerIdleHungerMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "How fast hunger drains while standing still.",
+    scale: "0 = No hunger drain | 0.1 = 10% drain | 1.0 = Default | Higher = drains faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  PlayerActiveHungerMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "How fast hunger drains during active movement and combat.",
+    scale: "0 = No hunger drain | 0.1 = 10% drain | 1.0 = Default | Higher = drains faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  DurabilityMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "Controls how fast weapons, tools, and armor lose durability when used.",
+    scale: "0 = Indestructible gear (no durability loss) | 1.0 = Default | Higher = breaks faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  StaminaCostMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "Global multiplier for stamina consumed by actions.",
+    scale: "Lower = actions cost less stamina (0.1 = 10% cost) | 1.0 = Default | Higher = exhausts faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  PlayerStaminaCostMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "Multiplier for player stamina usage on attacks, dodges, and climbs.",
+    scale: "Lower = less stamina spent | 1.0 = Default | Higher = more stamina spent.",
+    min: 0, max: 5, step: 0.05
+  },
+  PlayerStaminaCostSprintMultiplier: {
+    cat: "Survival & Stamina",
+    desc: "Multiplier for stamina drained per second while sprinting.",
+    scale: "0 = Infinite sprint | 1.0 = Default | Higher = drains faster.",
+    min: 0, max: 5, step: 0.05
+  },
+  PlayerMovementSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Adjusts base walking and jogging speed for players.",
+    scale: "1.0 = Default | 1.1 = 10% faster movement.",
+    min: 0.5, max: 3, step: 0.05
+  },
+  PlayerSprintSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Adjusts top sprinting speed for players.",
+    scale: "1.0 = Default | 1.2 = 20% faster sprint.",
+    min: 0.5, max: 3, step: 0.05
+  },
+  PlayerHealthRegenSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Controls passive health regeneration rate.",
+    scale: "Higher = faster passive healing | 1.0 = Default.",
+    min: 0, max: 10, step: 0.1
+  },
+  PlayerStaminaRegenSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Multiplier for how quickly stamina bar refills once regeneration begins.",
+    scale: "Higher = refills faster | 1.0 = Default.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  DayCycleSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Overall speed of the 24-hour in-game day/night cycle.",
+    scale: "Lower = longer days & nights (0.5 = 2x longer cycle) | 1.0 = Default | Higher = faster cycle.",
+    min: 0.05, max: 5, step: 0.05
+  },
+  DayTimeSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Speed at which daytime hours pass.",
+    scale: "Lower = longer daylight (0.5 = 2x longer day) | Higher = shorter daylight.",
+    min: 0.05, max: 5, step: 0.05
+  },
+  NightTimeSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Speed at which nighttime hours pass.",
+    scale: "Higher = shorter nights (4.0 = night passes 4x faster) | Lower = longer nights.",
+    min: 0.05, max: 10, step: 0.1
+  },
+  DawnDuskSpeedScale: {
+    cat: "Survival & Stamina",
+    desc: "Speed of dawn and dusk twilight transitions.",
+    scale: "Lower = longer sunrise/sunset transitions | Higher = quick transition.",
+    min: 0.05, max: 5, step: 0.05
+  },
+  DropEquipmentOnDeath: {
+    cat: "Survival & Stamina",
+    desc: "Determines what happens to a player's inventory when they die.",
+    scale: "0 = Keep everything on death | 1 = Drop all items | 2 = Drop backpack only (keep hotbar/armor).",
+    min: 0, max: 2, step: 1
+  },
+  EverybodyCanLootCorpse: {
+    cat: "Survival & Stamina",
+    desc: "If True, any player can loot a dead player's corpse. If False, only the owner/clan can.",
+    scale: "Toggle ON (True) or OFF (False)."
+  },
+  LogoutCharactersRemainInTheWorld: {
+    cat: "Survival & Stamina",
+    desc: "If True, player bodies stay sleeping in the world after logging off. If False, bodies disappear on logout.",
+    scale: "Toggle ON (True) or OFF (False)."
+  },
+  EnableSandStorm: {
+    cat: "Survival & Stamina",
+    desc: "Enables or disables periodic sandstorms across the Exiled Lands.",
+    scale: "Toggle ON (True) or OFF (False)."
+  },
+  PlayerDamageMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies melee and ranged damage dealt by players.",
+    scale: "1.0 = Default | 2.0 = Double player damage. Higher = players hit harder.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  PlayerDamageTakenMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies damage received by players from enemies and environment.",
+    scale: "0.5 = Players take 50% less damage | 1.0 = Default | Higher = players take more damage.",
+    min: 0, max: 5, step: 0.05
+  },
+  NPCDamageMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies damage dealt by wild NPCs, monsters, and bosses.",
+    scale: "Lower = weaker enemies | 1.0 = Default | Higher = deadlier enemies.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  NPCDamageTakenMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies damage taken by wild NPCs and bosses.",
+    scale: "Higher = enemies die faster | Lower = enemies feel spongier.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  NPCHealthMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies the maximum HP pool of wild NPCs and bosses.",
+    scale: "1.0 = Default | 2.0 = Double boss/enemy HP.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  NPCRespawnMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Controls how quickly killed NPCs and wildlife respawn.",
+    scale: "Lower = faster respawns | 1.0 = Default | Higher = slower respawns.",
+    min: 0.1, max: 5, step: 0.1
+  },
+  MinionDamageMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies damage dealt by player-owned thralls and pets.",
+    scale: "1.0 = Default | Higher = stronger followers.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  MinionDamageTakenMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies damage taken by player-owned thralls and pets.",
+    scale: "Lower = tankier followers | 1.0 = Default | Higher = followers take more damage.",
+    min: 0, max: 5, step: 0.1
+  },
+  ThrallDamageToPlayersMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies damage dealt by thralls/pets specifically against players.",
+    scale: "0.5 = Half damage to players | 1.0 = Full damage.",
+    min: 0, max: 5, step: 0.05
+  },
+  ThrallDamageToNPCsMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies damage dealt by thralls/pets against NPCs and monsters.",
+    scale: "1.0 = Default | Higher = followers shred NPCs faster.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  ConciousnessDamageMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies knockout (concussive) damage dealt with truncheons and blunted arrows.",
+    scale: "Higher = knocks out thralls faster | 1.0 = Default.",
+    min: 0.1, max: 10, step: 0.1
+  },
+  UnconsciousTimeSeconds: {
+    cat: "Combat & Thralls",
+    desc: "How many seconds a knocked-out thrall stays unconscious before waking up.",
+    scale: "In seconds (1800 = 30 minutes). Higher = more time to drag them to a Wheel.",
+    min: 60, max: 7200, step: 60
+  },
+  FeedBoxRangeMultiplier: {
+    cat: "Combat & Thralls",
+    desc: "Multiplies the radius in which Thrall Pots and Feed Boxes distribute food to nearby followers.",
+    scale: "1.0 = Default | 4.0 = 4x wider feeding radius.",
+    min: 0.5, max: 10, step: 0.5
+  },
+  UseMinionPopulationLimit: {
+    cat: "Combat & Thralls",
+    desc: "Enforces a cap on how many total thralls/pets a player or clan can own.",
+    scale: "Toggle ON (True) to enforce cap, OFF (False) for unlimited followers."
+  },
+  MinionPopulationBaseValue: {
+    cat: "Combat & Thralls",
+    desc: "Base number of thralls/pets allowed per clan if UseMinionPopulationLimit is True.",
+    scale: "Higher = more followers allowed.",
+    min: 5, max: 200, step: 5
+  },
+  MinionPopulationPerPlayer: {
+    cat: "Combat & Thralls",
+    desc: "Additional thralls/pets allowed per clan member when follower cap is enabled.",
+    scale: "Added on top of MinionPopulationBaseValue for each clan member.",
+    min: 0, max: 50, step: 1
+  },
+  CraftFromStorageRadius: {
+    cat: "Building & Decay",
+    desc: "Radius (in Unreal units; 1 foundation ≈ 256 units) that crafting stations can pull materials from nearby chests.",
+    scale: "0 = Disabled | 20000 ≈ ~78 foundations reach. Higher = wider pull radius.",
+    min: 0, max: 50000, step: 500
+  },
+  BuildFromStorageRadius: {
+    cat: "Building & Decay",
+    desc: "Radius from which your Construction Hammer can pull building materials directly from chests.",
+    scale: "0 = Disabled | 20000 ≈ ~78 foundations reach.",
+    min: 0, max: 50000, step: 500
+  },
+  PersonalCraftFromStorageRadius: {
+    cat: "Building & Decay",
+    desc: "Radius from which hand-crafting in your personal inventory can pull materials from chests.",
+    scale: "0 = Disabled | 20000 ≈ ~78 foundations reach.",
+    min: 0, max: 50000, step: 500
+  },
+  LandClaimRadiusMultiplier: {
+    cat: "Building & Decay",
+    desc: "Multiplies the no-build & resource-despawn radius around placed building pieces.",
+    scale: "Lower = others can build closer & nodes respawn closer | 1.0 = Default.",
+    min: 0.1, max: 3, step: 0.05
+  },
+  StabilityLossMultiplier: {
+    cat: "Building & Decay",
+    desc: "Controls how much structural stability is lost per ceiling/wall tile extended from support.",
+    scale: "0 = Infinite stability | 0.25 = Build 4x further out without pillars | 1.0 = Default.",
+    min: 0, max: 2, step: 0.05
+  },
+  DisableBuildingAbandonment: {
+    cat: "Building & Decay",
+    desc: "When True, player buildings never decay or enter an abandoned state.",
+    scale: "True = Decay OFF (safe forever) | False = Buildings decay over time."
+  },
+  DisableThrallDecay: {
+    cat: "Building & Decay",
+    desc: "When True, placed thralls and pets never despawn due to owner inactivity.",
+    scale: "True = Thralls never decay | False = Thralls despawn after ThrallDecayTime."
+  },
+  MaxBuildingDecayTime: {
+    cat: "Building & Decay",
+    desc: "Maximum decay timer (in seconds) for large tier-3 bases when decay is active.",
+    scale: "In seconds (1296000 = 15 days). Higher = longer before base decays.",
+    min: 3600, max: 2592000, step: 3600
+  },
+  BuildingPickupEnabled: {
+    cat: "Building & Decay",
+    desc: "Allows players to pick up placed building pieces back into their inventory intact.",
+    scale: "True = Can pick up pieces | False = Must dismantle."
+  },
+  AllowBuildingAnywhere: {
+    cat: "Building & Decay",
+    desc: "Allows building inside NPC camps, dungeons, and normally restricted zones.",
+    scale: "True = Build anywhere | False = Respect standard no-build zones."
+  },
+  ContainersIgnoreOwnership: {
+    cat: "Building & Decay",
+    desc: "When True, chests and crafting stations are unlocked to everyone regardless of clan.",
+    scale: "True = All containers public | False = Locked to owner/clan."
+  },
+  PVPEnabled: {
+    cat: "PvP & Avatars",
+    desc: "Enables player-versus-player combat damage.",
+    scale: "True = PvP ON | False = PvE only."
+  },
+  CanDamagePlayerOwnedStructures: {
+    cat: "PvP & Avatars",
+    desc: "Allows players and explosives to damage player-built structures.",
+    scale: "True = Base raiding ON | False = Bases indestructible."
+  },
+  FriendlyFireDamageMultiplier: {
+    cat: "PvP & Avatars",
+    desc: "Multiplier for damage dealt to fellow clan members.",
+    scale: "0 = No friendly fire | 0.25 = 25% damage | 1.0 = Full friendly fire.",
+    min: 0, max: 2, step: 0.05
+  },
+  AvatarsDisabled: {
+    cat: "PvP & Avatars",
+    desc: "Disables summoning giant religious Gods/Avatars.",
+    scale: "True = Avatars disabled | False = Avatars allowed."
+  },
+  MaxPlayers: {
+    cat: "Network & Launcher",
+    desc: "Maximum concurrent players allowed to connect to the server (Game.ini).",
+    scale: "Slider: 1 to 70 players (Raw allows higher).",
+    min: 1, max: 70, step: 1
+  },
+  Port: {
+    cat: "Network & Launcher",
+    desc: "Primary UDP game traffic port configured in Engine.ini [URL].",
+    scale: "Default is 7777 (currently 7007). Must be port-forwarded on your router.",
+    min: 1024, max: 65535, step: 1
+  },
+  GameServerQueryPort: {
+    cat: "Network & Launcher",
+    desc: "Steam server browser query port in Engine.ini [OnlineSubsystemSteam].",
+    scale: "Default is 27015. Must be open in firewall/router for server list visibility.",
+    min: 1024, max: 65535, step: 1
+  },
+  NetServerMaxTickRate: {
+    cat: "Network & Launcher",
+    desc: "Server simulation ticks per second in Engine.ini. Higher gives smoother AI/combat but uses more CPU.",
+    scale: "30 = Standard official rate | 60 = High-tick smooth combat.",
+    min: 15, max: 120, step: 5
+  },
+  RconEnabled: {
+    cat: "Network & Launcher",
+    desc: "Enables Remote Console (RCON) access in Game.ini for admin tools and bots.",
+    scale: "True = RCON active | False = Disabled."
+  },
+  RconPort: {
+    cat: "Network & Launcher",
+    desc: "TCP port used for RCON remote administration connections.",
+    scale: "Default is 25575. Keep firewalled from untrusted IPs.",
+    min: 1024, max: 65535, step: 1
+  },
+  ServerName: {
+    cat: "Network & Launcher",
+    desc: "Public server name displayed in the Conan Exiles server browser (Engine.ini).",
+    scale: "Text string."
+  },
+  ServerPassword: {
+    cat: "Network & Launcher",
+    desc: "Password required for players to join the server (Engine.ini). Leave blank for public.",
+    scale: "Text string."
+  },
+  AdminPassword: {
+    cat: "Network & Launcher",
+    desc: "In-game password used in Settings → Server Settings → Make Me Admin (ServerSettings.ini).",
+    scale: "Text string."
+  },
+  DedicatedServerLauncherModList: {
+    cat: "Network & Launcher",
+    desc: "Comma-separated list of Steam Workshop Mod IDs loaded by the Dedicated Server Launcher in exact load order.",
+    scale: "Workshop IDs separated by commas, no spaces."
+  },
+  IsBattlEyeEnabled: {
+    cat: "Network & Launcher",
+    desc: "Enables BattlEye anti-cheat protection.",
+    scale: "True = BattlEye required | False = BattlEye disabled."
+  },
+  MaxAllowedPing: {
+    cat: "Network & Launcher",
+    desc: "Maximum ping (ms) allowed before kicking high-latency players. 0 disables ping kick.",
+    scale: "0 = No ping limit | 150-250 = Typical regional cap.",
+    min: 0, max: 500, step: 10
+  }
+};
+
+// ============================================================================
+// 2. SAMPLE PRESET DATA (Crom's Gaming Configs)
+// ============================================================================
+const SAMPLE_FILES = {
+  "DedicatedServerLauncher.ini": `[GameSettings]\r\nStartupMap=Exiled Lands|/Game/Maps/ConanSandbox/ConanSandbox,Isle of Siptah|/Game/DLC_EXT/DLC_Siptah/Maps/DLC_Isle_of_Siptah\r\n\r\n[ServerSettings]\r\nZombieCheckEnabled=True\r\nZombieCheckTimeDelay=345660\r\n\r\n[WebPage]\r\nWebPageEnabled=False\r\nWebPagePort=80\r\nWebPagePassword=\r\n\r\n[SteamCMD]\r\nSteamCMDExtraCommandLineParameters=""\r\n`,
+  "Engine.ini": `[URL]\r\nPort=7007\r\n\r\n[Core.System]\r\nPaths=../../../ConanSandbox/Plugins/FLX/InterfaceIndex/Content\r\n\r\n[OnlineSubsystem]\r\nServerPassword=ServerBW\r\nServerName=BW's Test Tickles\r\nDedicatedServerLauncherMultihomeEnabled=False\r\nDedicatedServerLauncherMultihomeIP=\r\n\r\n[OnlineSubsystemSteam]\r\nGameServerQueryPort=27015\r\n\r\n[/Script/OnlineSubsystemUtils.IpNetDriver]\r\nNetServerMaxTickRate=30\r\n`,
+  "Game.ini": `[/Script/Engine.GameSession]\r\nMaxPlayers=10\r\n\r\n[RconPlugin]\r\nRconEnabled=True\r\nRconPort=25575\r\nRconMaxKarma=60\r\nRconMessageMethod=0\r\nRconPassword=RConBW\r\n`,
+  "Input.ini": `;METADATA=(Diff=true, UseCommands=true)\r\n[CurrentIniVersion]\r\nVersion=0\r\n`,
+  "ModHttp.ini": `[ThundersCommander]\r\nAllowedOrigin="https://discord.com"\r\n`,
+  "ServerSettings.ini": `[ServerSettings]\r\nPlayerIdleThirstMultiplier=0.1\r\nPlayerActiveThirstMultiplier=0.1\r\nPlayerIdleHungerMultiplier=0.1\r\nPlayerActiveHungerMultiplier=0.1\r\nAdminPassword=AdminBW\r\nLogoutCharactersRemainInTheWorld=False\r\nDurabilityMultiplier=0\r\nDropEquipmentOnDeath=0\r\nEverybodyCanLootCorpse=True\r\nDayCycleSpeedScale=0.49999997\r\nDayTimeSpeedScale=0.50000006\r\nNightTimeSpeedScale=3.99999976\r\nDawnDuskSpeedScale=0.100000001\r\nStaminaCostMultiplier=0.100000001\r\nItemSpoilRateScale=0.50000006\r\nHarvestAmountMultiplier=9.99999905\r\nNPCMindReadingMode=0\r\nMaxNudity=0\r\nEnableSandStorm=False\r\nConfigVersion=13\r\nBlueprintConfigVersion=25\r\nElderThingSpawnRate=0.99999994\r\nBuildingPVPWhitelist=("80901","80111","80112","80915","80912")\r\nserverRegion=1\r\nDedicatedServerLauncherModEnabled=True\r\nDedicatedServerLauncherAutoRestartEnabled=False\r\nDedicatedServerLauncherStartIfNotRunningEnabled=False\r\nDedicatedServerLauncherAutoRestartTime=626400\r\nDedicatedServerLauncherAutoRestartMinimumUpTime=612000\r\nDedicatedServerLauncherBackupEnabled=False\r\nDedicatedServerLauncherAutoRestartPerDay=1\r\nDedicatedServerLauncherBackupTrimmingEnabled=False\r\nDedicatedServerLauncherBackupTrimmingLimit=7\r\nDedicatedServerLauncherScriptExecute=0\r\nDedicatedServerLauncherAutoRestartWarningDelay1=605400\r\nDedicatedServerLauncherAutoRestartWarningDelay2=605100\r\nDedicatedServerLauncherAutoRestartWarningDelay3=604920\r\nDedicatedServerLauncherAutoUpdateStrategy=1\r\nDedicatedServerLauncherSteamCMDDisabled=False\r\nDedicatedServerLauncherBackgroundCheckDelay=605100\r\nDedicatedServerLauncherUseAllAvailableCores=True\r\nDedicatedServerLauncherServerAffinityMask=0\r\nDedicatedServerLauncherProcessPriority=0\r\nDedicatedServerLauncherDiscordEnabled=True\r\nDedicatedServerLauncherDiscordTimeStampsEnabled=True\r\nIsBattlEyeEnabled=False\r\nIsVACEnabled=False\r\nPlayerKnockbackMultiplier=1\r\nNPCKnockbackMultiplier=1\r\nStructureDamageMultiplier=1\r\nStructureHealthMultiplier=1\r\nNPCRespawnMultiplier=1\r\nNPCHealthMultiplier=1\r\nPlayerDamageMultiplier=2\r\nPlayerDamageTakenMultiplier=0.50000005960464478\r\nMinionDamageMultiplier=1\r\nMinionDamageTakenMultiplier=1\r\nNPCDamageMultiplier=1\r\nNPCDamageTakenMultiplier=1\r\nPlayerEncumbranceMultiplier=1\r\nPlayerEncumbrancePenaltyMultiplier=1\r\nPlayerMovementSpeedScale=1.10\r\nPlayerStaminaCostSprintMultiplier=1\r\nPlayerSprintSpeedScale=1.2\r\nPlayerStaminaCostMultiplier=1\r\nPlayerHealthRegenSpeedScale=1\r\nPlayerXPRateMultiplier=10\r\nPlayerXPKillMultiplier=10\r\nPlayerXPHarvestMultiplier=10\r\nPlayerXPCraftMultiplier=10\r\nPlayerXPTimeMultiplier=10\r\nDogsOfTheDesertSpawnWithDogs=False\r\nCrossDesertOnce=True\r\nThrallExclusionRadius=100\r\nMaxAggroRange=9000\r\nFriendlyFireDamageMultiplier=0.25\r\nCampsIgnoreLandclaim=True\r\nAvatarDomeDurationMultiplier=1\r\nAvatarDomeDamageMultiplier=1\r\nNPCMaxSpawnCapMultiplier=1\r\nPvPMountEnduranceDamageMultiplier=1\r\nAmbientLifeEnabled=False\r\nCraftFromStorageRadius=20000\r\nBuildFromStorageRadius=20000\r\nPVPBuildFromStorageRadius=600\r\nPersonalCraftFromStorageRadius=20000\r\nBuildingReplicationDistance=0\r\nPVPEnabled=False\r\nRestrictPVPTime=False\r\nRestrictPVPBuildingDamageTime=False\r\nPVPTimeMondayStart=0\r\nPVPTimeTuesdayStart=0\r\nPVPTimeWednesdayStart=0\r\nPVPTimeThursdayStart=0\r\nPVPTimeFridayStart=0\r\nPVPTimeSaturdayStart=0\r\nPVPTimeSundayStart=0\r\nPVPTimeMondayEnd=0\r\nPVPTimeTuesdayEnd=0\r\nPVPTimeWednesdayEnd=0\r\nPVPTimeThursdayEnd=0\r\nPVPTimeFridayEnd=0\r\nPVPTimeSaturdayEnd=0\r\nPVPTimeSundayEnd=0\r\nPVPEnabledMonday=False\r\nPVPEnabledTuesday=False\r\nPVPEnabledWednesday=False\r\nPVPEnabledThursday=False\r\nPVPEnabledFriday=False\r\nPVPEnabledSaturday=False\r\nPVPEnabledSunday=False\r\nPVPBuildingDamageTimeMondayStart=0\r\nPVPBuildingDamageTimeTuesdayStart=0\r\nPVPBuildingDamageTimeWednesdayStart=0\r\nPVPBuildingDamageTimeThursdayStart=0\r\nPVPBuildingDamageTimeFridayStart=0\r\nPVPBuildingDamageTimeSaturdayStart=0\r\nPVPBuildingDamageTimeSundayStart=0\r\nPVPBuildingDamageTimeMondayEnd=0\r\nPVPBuildingDamageTimeTuesdayEnd=0\r\nPVPBuildingDamageTimeWednesdayEnd=0\r\nPVPBuildingDamageTimeThursdayEnd=0\r\nPVPBuildingDamageTimeFridayEnd=0\r\nPVPBuildingDamageTimeSaturdayEnd=0\r\nPVPBuildingDamageTimeSundayEnd=0\r\nPVPBuildingDamageEnabledMonday=False\r\nPVPBuildingDamageEnabledTuesday=False\r\nPVPBuildingDamageEnabledWednesday=False\r\nPVPBuildingDamageEnabledThursday=False\r\nPVPBuildingDamageEnabledFriday=False\r\nPVPBuildingDamageEnabledSaturday=False\r\nPVPBuildingDamageEnabledSunday=False\r\nDisableBuildingDuringTimeRestrictedPVP=False\r\nCombatModeModifier=0\r\nContainersIgnoreOwnership=True\r\nLandClaimRadiusMultiplier=1\r\nDisableLandclaimNotifications=True\r\nBuildingPreloadRadius=80\r\nCanDamagePlayerOwnedStructures=False\r\nDynamicBuildingDamage=False\r\nDynamicBuildingDamagePeriod=1800\r\nCreativeModeServer=0\r\nKickAFKPercentage=80\r\nKickAFKTime=2700\r\nOfflinePlayersUnconsciousBodiesHours=168\r\nShowOnlinePlayers=0\r\nCorpsesPerPlayer=10\r\nPlayerCorpseLifeTime=1800\r\nNPCCorpseLifeTime=600\r\nItemRepairMinimumDurability=0.100000001\r\nItemRepairDurabilityLossByRepairkitTier=(0.200000,0.200000,0.150000,0.100000,0.050000,0.025000)\r\nItemRepairDurabilityLossPenaltyChance=1\r\nItemConvertionMultiplier=0.100000001\r\nThrallConversionMultiplier=0\r\nFuelBurnTimeMultiplier=9.99999905\r\nCraftingCostMultiplier=0.100000001\r\nStaminaRegenerationTime=3.75\r\nStaminaExhaustionTime=3.75\r\nStaminaStaticRegenRateMultiplier=1\r\nStaminaMovingRegenRateMultiplier=1\r\nPlayerStaminaRegenSpeedScale=1\r\nStaminaOnConsumeRegenPause=1.10000002\r\nStaminaOnExhaustionRegenPause=2\r\nThrallScoutingTimeMinutes=10\r\nThrallMinDistanceAwayFromHome=5000\r\nThrallTeleportingCooldown=10\r\nMinionPopulationBaseValue=50\r\nMinionPopulationPerPlayer=5\r\nMinionOverpopulationCleanup=60\r\nMinionOverpopulationAllowed=10\r\nEnableFollowerDbno=True\r\nUseMinionPopulationLimit=False\r\nEnableFollowerRescueOnLandClaimOnly=True\r\nEnableFollowerRescueInBuildExclusionZone=False\r\nFollowerRescueCooldown=3600\r\nDamageCooldownBeforeRescue=600\r\nThrallCorruptionRemovalMultiplier=1\r\nPlayerCorruptionGainMultiplier=1\r\nPlayerCorruptionGainFromSorceryMultiplier=1\r\nAnimalPenCraftingTimeMultiplier=0.00100000005\r\nFeedBoxRangeMultiplier=3.99999976\r\nBuildingDamageMultiplier=1\r\nPathFollowingSendsAngularVelocity=False\r\nUnconsciousTimeSeconds=1800\r\nConciousnessDamageMultiplier=1\r\nThrallDamageToPlayersMultiplier=0.50000006\r\nThrallDamageToNPCsMultiplier=1\r\nDisableBuildingAbandonment=True\r\nMaxBuildingDecayTime=1296000\r\nMaxDecayTimeToAutoDemolish=604800\r\nThrallDecayTime=1296000\r\nDisableThrallDecay=True\r\nBuildingDecayTimePerScore=5400\r\nBuildingDecayTimeMultiplier=1\r\nDecayCleanupTimeMultiplier=2\r\nDecayBonusTimeRate=600\r\nDecayShowBuildingScore=False\r\nEnableTargetLock=True\r\nEnableFatalities=False\r\nCachedLandClaimRadiusMultiplier=1\r\nCachedBuildingReplicationDistance=0\r\nValidatePhysNavWalkWithRaycast=True\r\nLocalNavMeshVisualizationFrequency=-1\r\nLocalLandClaimVisualizationFrequency=-1\r\nLocalLandClaimVisualizationRadius=3000\r\nLocalLandClaimVisualizationChannel=0\r\nUseLocalQuadraticAngularVelocityPrediction=False\r\nLQAVPUseTime=0.150000006\r\nLQAVPFadeTime=0.100000001\r\nLQAVPMethod=2\r\nNetworkSimulatedSmoothRotationTimeWithLQAVP=0.100000001\r\nEnableClanMarkers=True\r\nValidatePlayerStats=False\r\nbUndermeshDetectionEnabled=False\r\nAllowedTimeUndermesh=1\r\nCapCharacterLayoutScalarParams=False\r\nEventLogPvPCauserPrivacy=2\r\nEventLogPvECauserPrivacy=1\r\nserverVoiceChat=1\r\nAvatarsDisabled=False\r\nRestrictAvatarSummoningTime=False\r\nAvatarSummoningTimeWeekdayStart=0\r\nAvatarSummoningTimeWeekdayEnd=0\r\nAvatarSummoningTimeWeekendStart=0\r\nAvatarSummoningTimeWeekendEnd=0\r\nAvatarLifetime=600\r\nAvatarSummonTime=60\r\nMaxDeathMapMarkers=3\r\nServerTransferEnabled=True\r\nMaxAllowedPing=0\r\nAllowFamilySharedAccount=True\r\nRegionAllowAfrica=True\r\nRegionAllowAsia=True\r\nRegionAllowCentralEurope=True\r\nRegionAllowEasternEurope=True\r\nRegionAllowWesternEurope=True\r\nRegionAllowNorthAmerica=True\r\nRegionAllowOceania=True\r\nRegionAllowSouthAmerica=True\r\nBuildingPickupEnabled=True\r\nPoiProtectionEnabled=False\r\nEventSystemEnabled=True\r\nStabilityLossMultiplier=0.25\r\nBuildingValidationEnabled=False\r\nAllowBuildingAnywhere=True\r\nHealthbarVisibilityDistance=10200.0029\r\nServerMergeOutgoingTime=0\r\nServerRetirementTime=0\r\nDisableChatFormatting=True\r\nEnableLoginQueue=True\r\nDisconnectionGraceTime=180\r\nbCanBeDamaged=True\r\nDedicatedServerLauncherModList=3722388367,3721087981,3722829382,3723820003,3718614759,3758661389,3784636658,3753600965,3728528172,3718199031,3720330686,3725707777,3720619265,3718655125,3721568940,3723854434,3719965485,3721036709,3755091710,3720326124,3832070939,3721090132,3728208565,3824791671,3721096154,3729640272,3813812107\r\nDedicatedServerLauncherAutoRestartWarningMessage1=""\r\nDedicatedServerLauncherAutoRestartWarningMessage2=""\r\nDedicatedServerLauncherAutoRestartWarningMessage3=""\r\nDedicatedServerLauncherServerReadyMessage=""\r\nDedicatedServerLauncherServerRestartedMessage=""\r\nDedicatedServerLauncherServerShutdownMessage=""\r\nDedicatedServerLauncherDiscordWebHooks=""\r\nDedicatedServerLauncherDiscordUsername=""\r\nDedicatedServerLauncherBackupPath=\r\nDedicatedServerLauncherScriptPath=\r\nDedicatedServerLauncherExtraCommandLineParameters=\r\n`
+};
+
+// ============================================================================
+// 3. STATE & INI PARSER (Preserves structure, comments, sections & formatting)
+// ============================================================================
+const state = {
+  files: {},
+  activeFile: null,
+  activeCategory: "All",
+  searchQuery: "",
+  onlyModified: false
+};
+
+function parseIni(filename, rawText) {
+  const lineEnding = rawText.includes("\r\n") ? "\r\n" : "\n";
+  const rawLines = rawText.split(/\r?\n/);
+  const lines = [];
+  const entries = [];
+  let currentSection = "General";
+
+  rawLines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith(";") || trimmed.startsWith("#")) {
+      lines.push({ type: "raw", text: line });
+    } else if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      currentSection = trimmed.slice(1, -1);
+      lines.push({ type: "section", text: line, section: currentSection });
+    } else if (line.includes("=")) {
+      const eqIdx = line.indexOf("=");
+      const key = line.slice(0, eqIdx).trim();
+      const val = line.slice(eqIdx + 1);
+      const entry = {
+        id: `${filename}::${currentSection}::${key}::${idx}`,
+        filename,
+        section: currentSection,
+        key,
+        originalValue: val,
+        value: val,
+        type: detectType(key, val)
+      };
+      lines.push({ type: "kv", entry });
+      entries.push(entry);
+    } else {
+      lines.push({ type: "raw", text: line });
+    }
+  });
+
+  return { filename, lines, entries, lineEnding };
+}
+
+function detectType(key, val) {
+  const v = val.trim();
+  if (/^(true|false)$/i.test(v)) return "boolean";
+  if (v !== "" && !isNaN(Number(v)) && !v.includes(",") && !v.startsWith('"')) return "number";
+  if (v.length > 75 || key.toLowerCase().includes("modlist") || key.toLowerCase().includes("whitelist")) return "textarea";
+  return "text";
+}
+
+function serializeIni(fileObj) {
+  return fileObj.lines.map(item => {
+    if (item.type === "kv") {
+      return `${item.entry.key}=${item.entry.value}`;
+    }
+    return item.text;
+  }).join(fileObj.lineEnding);
+}
+
+function inferCategory(entry) {
+  if (SETTING_DOCS[entry.key]) return SETTING_DOCS[entry.key].cat;
+  const k = entry.key.toLowerCase();
+  if (entry.filename !== "ServerSettings.ini" || k.includes("launcher") || k.includes("port") || k.includes("rcon") || k.includes("region")) {
+    return "Network & Launcher";
+  }
+  if (k.includes("xp") || k.includes("harvest") || k.includes("craft") || k.includes("fuel")) return "Progression & Harvest";
+  if (k.includes("thrall") || k.includes("minion") || k.includes("npc") || k.includes("damage") || k.includes("follower")) return "Combat & Thralls";
+  if (k.includes("thirst") || k.includes("hunger") || k.includes("stamina") || k.includes("corpse") || k.includes("spoil")) return "Survival & Stamina";
+  if (k.includes("build") || k.includes("decay") || k.includes("landclaim") || k.includes("stability")) return "Building & Decay";
+  if (k.includes("pvp") || k.includes("avatar")) return "PvP & Avatars";
+  return "Other / Advanced";
+}
+
+function generateAutoDescription(entry) {
+  if (SETTING_DOCS[entry.key]) return SETTING_DOCS[entry.key];
+
+  const readable = entry.key
+    .replace(/^b([A-Z])/, "$1")
+    .replace(/([A-Z])/g, " $1")
+    .trim();
+
+  let scale = "";
+  if (entry.type === "boolean") {
+    scale = "Toggle ON (True) or OFF (False).";
+  } else if (entry.type === "number") {
+    if (entry.key.includes("Multiplier") || entry.key.includes("Scale")) {
+      scale = "1.0 = Standard baseline. Adjust slider or enter exact decimal.";
+    } else if (entry.key.includes("Time") || entry.key.includes("Delay") || entry.key.includes("Cooldown")) {
+      scale = "Duration value (typically in seconds). Higher = longer wait/duration.";
+    } else {
+      scale = "Use slider for quick adjustment or type exact raw value in box.";
+    }
+  } else {
+    scale = "Direct string/list value saved straight into " + entry.filename + ".";
+  }
+
+  return {
+    cat: inferCategory(entry),
+    desc: `Configures "${readable}" inside [${entry.section}] of ${entry.filename}.`,
+    scale
+  };
+}
+
+function inferSliderBounds(key, numVal) {
+  if (SETTING_DOCS[key] && SETTING_DOCS[key].min !== undefined) {
+    return { min: SETTING_DOCS[key].min, max: SETTING_DOCS[key].max, step: SETTING_DOCS[key].step };
+  }
+  const abs = Math.abs(numVal);
+  if (key.includes("Multiplier") || key.includes("Scale")) {
+    const max = Math.max(10, Math.ceil(abs * 2));
+    return { min: 0, max, step: 0.05 };
+  }
+  if (abs === 0) return { min: 0, max: 100, step: 1 };
+  if (abs <= 1) return { min: 0, max: 5, step: 0.05 };
+  if (abs <= 10) return { min: 0, max: 50, step: 0.5 };
+  if (abs <= 100) return { min: 0, max: 500, step: 1 };
+  if (abs <= 5000) return { min: 0, max: 10000, step: 50 };
+  return { min: 0, max: Math.ceil(abs * 2), step: Math.max(1, Math.round(abs / 100)) };
+}
+
+// ============================================================================
+// 4. FILE LOADING & SAVING (Including Pure-JS Uncompressed ZIP Export)
+// ============================================================================
+function loadFilesFromMap(fileMap) {
+  Object.entries(fileMap).forEach(([name, content]) => {
+    state.files[name] = parseIni(name, content);
+    if (!state.activeFile) state.activeFile = name;
+  });
+  if (!state.files[state.activeFile]) {
+    state.activeFile = Object.keys(state.files)[0] || null;
+  }
+  renderAll();
+  showToast(`Loaded ${Object.keys(fileMap).length} scroll(s).`);
+}
+
+function handleFileList(fileList) {
+  const files = Array.from(fileList);
+  if (!files.length) return;
+  const loaded = {};
+  let remaining = files.length;
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      loaded[file.name] = e.target.result;
+      remaining--;
+      if (remaining === 0) {
+        state.activeFile = file.name;
+        loadFilesFromMap(loaded);
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function downloadSingleFile(filename) {
+  const fileObj = state.files[filename];
+  if (!fileObj) return;
+  const content = serializeIni(fileObj);
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  triggerDownload(blob, filename);
+  showToast(`Forged & saved ${filename}`);
+}
+
+function downloadAllAsZip() {
+  const filenames = Object.keys(state.files);
+  if (!filenames.length) return;
+
+  const encoder = new TextEncoder();
+  const fileEntries = [];
+  let offset = 0;
+
+  filenames.forEach(name => {
+    const nameBytes = encoder.encode(name);
+    const dataBytes = encoder.encode(serializeIni(state.files[name]));
+    const crc = crc32(dataBytes);
+
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    const view = new DataView(localHeader.buffer);
+    view.setUint32(0, 0x04034b50, true);
+    view.setUint16(4, 20, true);
+    view.setUint16(6, 0, true);
+    view.setUint16(8, 0, true);
+    view.setUint16(10, 0, true);
+    view.setUint16(12, 0, true);
+    view.setUint32(14, crc, true);
+    view.setUint32(18, dataBytes.length, true);
+    view.setUint32(22, dataBytes.length, true);
+    view.setUint16(26, nameBytes.length, true);
+    view.setUint16(28, 0, true);
+    localHeader.set(nameBytes, 30);
+
+    fileEntries.push({ nameBytes, dataBytes, crc, localHeader, offset });
+    offset += localHeader.length + dataBytes.length;
+  });
+
+  const centralHeaders = [];
+  let centralSize = 0;
+
+  fileEntries.forEach(f => {
+    const cd = new Uint8Array(46 + f.nameBytes.length);
+    const view = new DataView(cd.buffer);
+    view.setUint32(0, 0x02014b50, true);
+    view.setUint16(4, 20, true);
+    view.setUint16(6, 20, true);
+    view.setUint16(8, 0, true);
+    view.setUint16(10, 0, true);
+    view.setUint16(12, 0, true);
+    view.setUint16(14, 0, true);
+    view.setUint32(16, f.crc, true);
+    view.setUint32(20, f.dataBytes.length, true);
+    view.setUint32(24, f.dataBytes.length, true);
+    view.setUint16(28, f.nameBytes.length, true);
+    view.setUint16(30, 0, true);
+    view.setUint16(32, 0, true);
+    view.setUint16(34, 0, true);
+    view.setUint16(36, 0, true);
+    view.setUint32(38, 0, true);
+    view.setUint32(42, f.offset, true);
+    cd.set(f.nameBytes, 46);
+    centralHeaders.push(cd);
+    centralSize += cd.length;
+  });
+
+  const eocd = new Uint8Array(22);
+  const eocdView = new DataView(eocd.buffer);
+  eocdView.setUint32(0, 0x06054b50, true);
+  eocdView.setUint16(4, 0, true);
+  eocdView.setUint16(6, 0, true);
+  eocdView.setUint16(8, fileEntries.length, true);
+  eocdView.setUint16(10, fileEntries.length, true);
+  eocdView.setUint32(12, centralSize, true);
+  eocdView.setUint32(16, offset, true);
+  eocdView.setUint16(20, 0, true);
+
+  const parts = [];
+  fileEntries.forEach(f => { parts.push(f.localHeader, f.dataBytes); });
+  centralHeaders.forEach(cd => parts.push(cd));
+  parts.push(eocd);
+
+  const zipBlob = new Blob(parts, { type: "application/zip" });
+  triggerDownload(zipBlob, "ConanExilesEnhanced_Configs.zip");
+  showToast(`Saved ${filenames.length} scrolls in ConanExilesEnhanced_Configs.zip`);
+}
+
+function crc32(bytes) {
+  let crc = 0 ^ (-1);
+  for (let i = 0; i < bytes.length; i++) {
+    let c = (crc ^ bytes[i]) & 0xff;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+    crc = (crc >>> 8) ^ c;
+  }
+  return (crc ^ (-1)) >>> 0;
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ============================================================================
+// 5. RENDERING UI
+// ============================================================================
+function renderAll() {
+  const filenames = Object.keys(state.files);
+  const hasFiles = filenames.length > 0;
+
+  document.getElementById("emptyState").style.display = hasFiles ? "none" : "block";
+  document.getElementById("editorArea").style.display = hasFiles ? "block" : "none";
+  document.getElementById("btnDownloadAll").disabled = !hasFiles;
+
+  renderFileBar();
+  if (hasFiles) {
+    renderCategoryTabs();
+    renderSettingsGrid();
+  }
+}
+
+function renderFileBar() {
+  const bar = document.getElementById("fileBar");
+  bar.innerHTML = "";
+  Object.keys(state.files).forEach(name => {
+    const f = state.files[name];
+    const modCount = f.entries.filter(e => e.value !== e.originalValue).length;
+
+    const pill = document.createElement("div");
+    pill.className = `file-pill ${state.activeFile === name ? "active" : ""} ${modCount > 0 ? "modified" : ""}`;
+    pill.innerHTML = `
+      <span class="dot"></span>
+      <span><strong>${name}</strong> (${f.entries.length})</span>
+      ${modCount > 0 ? `<span style="color:var(--gold-bright);font-size:0.75rem;">• ${modCount} forged</span>` : ""}
+      <button class="dl-single" title="Download ${name}">⬇ Save</button>
+    `;
+
+    pill.addEventListener("click", e => {
+      if (e.target.classList.contains("dl-single")) {
+        e.stopPropagation();
+        downloadSingleFile(name);
+        return;
+      }
+      state.activeFile = name;
+      state.activeCategory = "All";
+      renderAll();
+    });
+
+    bar.appendChild(pill);
+  });
+}
+
+function renderCategoryTabs() {
+  const tabsEl = document.getElementById("categoryTabs");
+  const fileObj = state.files[state.activeFile];
+  if (!fileObj) return;
+
+  const cats = new Set(["All"]);
+  fileObj.entries.forEach(e => cats.add(inferCategory(e)));
+
+  tabsEl.innerHTML = "";
+  cats.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `tab ${state.activeCategory === cat ? "active" : ""}`;
+    btn.textContent = cat;
+    btn.onclick = () => {
+      state.activeCategory = cat;
+      renderCategoryTabs();
+      renderSettingsGrid();
+    };
+    tabsEl.appendChild(btn);
+  });
+}
+
+function renderSettingsGrid() {
+  const grid = document.getElementById("settingsGrid");
+  const fileObj = state.files[state.activeFile];
+  if (!fileObj) return;
+
+  const totalModified = fileObj.entries.filter(e => e.value !== e.originalValue).length;
+  document.getElementById("modCount").textContent = totalModified;
+
+  const q = state.searchQuery.toLowerCase().trim();
+  const filtered = fileObj.entries.filter(entry => {
+    const isMod = entry.value !== entry.originalValue;
+    if (state.onlyModified && !isMod) return false;
+    if (state.activeCategory !== "All" && inferCategory(entry) !== state.activeCategory) return false;
+    if (q) {
+      const doc = generateAutoDescription(entry);
+      const hay = `${entry.key} ${entry.value} ${entry.section} ${doc.desc}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  grid.innerHTML = "";
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">No runes or settings match your current search.</div>`;
+    return;
+  }
+
+  filtered.forEach(entry => {
+    const isMod = entry.value !== entry.originalValue;
+    const doc = generateAutoDescription(entry);
+
+    const card = document.createElement("div");
+    card.className = `setting-card ${isMod ? "is-modified" : ""}`;
+
+    const header = document.createElement("div");
+    header.className = "setting-header";
+
+    const titleWrap = document.createElement("div");
+    titleWrap.className = "setting-title-wrap";
+    titleWrap.innerHTML = `<span class="setting-name">${entry.key}</span><span class="info-icon"><span>?</span></span>`;
+
+    titleWrap.addEventListener("mouseenter", e => showTooltip(e, entry.key, doc));
+    titleWrap.addEventListener("mousemove", moveTooltip);
+    titleWrap.addEventListener("mouseleave", hideTooltip);
+
+    const rightMeta = document.createElement("div");
+    rightMeta.style.display = "flex";
+    rightMeta.style.alignItems = "center";
+    rightMeta.style.gap = "5px";
+    rightMeta.innerHTML = `<span class="setting-meta">[${entry.section}]</span>`;
+
+    if (isMod) {
+      const resetBtn = document.createElement("button");
+      resetBtn.className = "reset-btn";
+      resetBtn.textContent = "↺ Reset";
+      resetBtn.title = `Revert to original: ${entry.originalValue}`;
+      resetBtn.onclick = () => {
+        entry.value = entry.originalValue;
+        renderFileBar();
+        renderSettingsGrid();
+      };
+      rightMeta.appendChild(resetBtn);
+    }
+
+    header.appendChild(titleWrap);
+    header.appendChild(rightMeta);
+    card.appendChild(header);
+
+    const ctrlRow = document.createElement("div");
+    ctrlRow.className = "control-row";
+
+    if (entry.type === "boolean") {
+      const isTrue = /^true$/i.test(entry.value.trim());
+      ctrlRow.innerHTML = `
+        <div class="toggle-wrap">
+          <span style="font-size:0.84rem; color:${isTrue ? "#6ee08d" : "var(--text-ash)"}; font-weight:600;">
+            ${isTrue ? "True (Enabled)" : "False (Disabled)"}
+          </span>
+          <label class="switch">
+            <input type="checkbox" ${isTrue ? "checked" : ""}>
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+      `;
+      const cb = ctrlRow.querySelector("input");
+      cb.addEventListener("change", () => {
+        entry.value = cb.checked ? "True" : "False";
+        renderFileBar();
+        renderSettingsGrid();
+      });
+    } else if (entry.type === "number") {
+      const numVal = parseFloat(entry.value) || 0;
+      const bounds = inferSliderBounds(entry.key, numVal);
+
+      const slider = document.createElement("input");
+      slider.type = "range";
+      slider.min = bounds.min;
+      slider.max = Math.max(bounds.max, numVal);
+      slider.step = bounds.step;
+      slider.value = numVal;
+
+      const rawBox = document.createElement("input");
+      rawBox.type = "number";
+      rawBox.step = "any";
+      rawBox.className = "raw-num";
+      rawBox.value = entry.value.trim();
+
+      slider.addEventListener("input", () => {
+        entry.value = slider.value;
+        rawBox.value = slider.value;
+        card.classList.toggle("is-modified", entry.value !== entry.originalValue);
+        renderFileBar();
+        document.getElementById("modCount").textContent = fileObj.entries.filter(e => e.value !== e.originalValue).length;
+      });
+
+      rawBox.addEventListener("input", () => {
+        entry.value = rawBox.value;
+        const parsed = parseFloat(rawBox.value);
+        if (!isNaN(parsed)) {
+          if (parsed > parseFloat(slider.max)) slider.max = parsed;
+          if (parsed < parseFloat(slider.min)) slider.min = parsed;
+          slider.value = parsed;
+        }
+        card.classList.toggle("is-modified", entry.value !== entry.originalValue);
+        renderFileBar();
+        document.getElementById("modCount").textContent = fileObj.entries.filter(e => e.value !== e.originalValue).length;
+      });
+
+      ctrlRow.appendChild(slider);
+      ctrlRow.appendChild(rawBox);
+    } else if (entry.type === "textarea") {
+      const ta = document.createElement("textarea");
+      ta.className = "full-text";
+      ta.value = entry.value;
+      ta.addEventListener("input", () => {
+        entry.value = ta.value;
+        card.classList.toggle("is-modified", entry.value !== entry.originalValue);
+        renderFileBar();
+      });
+      ctrlRow.appendChild(ta);
+    } else {
+      const txt = document.createElement("input");
+      txt.type = "text";
+      txt.className = "full-text";
+      txt.value = entry.value;
+      txt.addEventListener("input", () => {
+        entry.value = txt.value;
+        card.classList.toggle("is-modified", entry.value !== entry.originalValue);
+        renderFileBar();
+      });
+      ctrlRow.appendChild(txt);
+    }
+
+    card.appendChild(ctrlRow);
+    grid.appendChild(card);
+  });
+}
+
+// ============================================================================
+// 6. TOOLTIP, GOOGLE SITES EXPORT & EVENT WIRING
+// ============================================================================
+const tooltipEl = document.getElementById("tooltip");
+
+function showTooltip(e, key, doc) {
+  document.getElementById("ttTitle").textContent = key;
+  document.getElementById("ttDesc").textContent = doc.desc;
+  document.getElementById("ttScale").textContent = doc.scale;
+  tooltipEl.classList.add("visible");
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const pad = 14;
+  const rect = tooltipEl.getBoundingClientRect();
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  if (x + rect.width > window.innerWidth - 10) x = e.clientX - rect.width - pad;
+  if (y + rect.height > window.innerHeight - 10) y = e.clientY - rect.height - pad;
+  tooltipEl.style.left = `${Math.max(8, x)}px`;
+  tooltipEl.style.top = `${Math.max(8, y)}px`;
+}
+
+function hideTooltip() {
+  tooltipEl.classList.remove("visible");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+async function copyFullHtmlToClipboard() {
+  const fullHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+  try {
+    await navigator.clipboard.writeText(fullHtml);
+    showToast("Full Google Sites embed HTML copied to clipboard!");
+  } catch (err) {
+    const ta = document.createElement("textarea");
+    ta.value = fullHtml;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("Full Google Sites embed HTML copied to clipboard!");
+  }
+}
+
+const fileInput = document.getElementById("fileInput");
+const dropzone = document.getElementById("dropzone");
+
+document.getElementById("btnUploadTrigger").onclick = () => fileInput.click();
+dropzone.onclick = () => fileInput.click();
+
+fileInput.onchange = e => {
+  handleFileList(e.target.files);
+  fileInput.value = "";
+};
+
+dropzone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropzone.classList.add("dragover");
+});
+
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+
+dropzone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropzone.classList.remove("dragover");
+  handleFileList(e.dataTransfer.files);
+});
+
+document.getElementById("btnLoadSamples").onclick = () => {
+  state.activeFile = "ServerSettings.ini";
+  loadFilesFromMap(SAMPLE_FILES);
+};
+
+document.getElementById("btnDownloadCurrent").onclick = () => {
+  if (state.activeFile) downloadSingleFile(state.activeFile);
+};
+
+document.getElementById("btnDownloadAll").onclick = downloadAllAsZip;
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  state.searchQuery = e.target.value;
+  renderSettingsGrid();
+});
+
+document.getElementById("onlyModified").addEventListener("change", e => {
+  state.onlyModified = e.target.checked;
+  renderSettingsGrid();
+});
+
+// Google Sites Modal Handlers
+const sitesModal = document.getElementById("sitesModal");
+document.getElementById("btnGoogleSites").onclick = () => sitesModal.classList.add("open");
+document.getElementById("btnCloseSitesModal").onclick = () => sitesModal.classList.remove("open");
+sitesModal.addEventListener("click", e => {
+  if (e.target === sitesModal) sitesModal.classList.remove("open");
+});
+document.getElementById("btnCopyOnly").onclick = async () => {
+  await copyFullHtmlToClipboard();
+  sitesModal.classList.remove("open");
+};
+document.getElementById("btnCopyAndOpenSites").onclick = async () => {
+  await copyFullHtmlToClipboard();
+  window.open("https://sites.google.com/u/0/create", "_blank", "noopener");
+  sitesModal.classList.remove("open");
+};
+</script>
+</body>
+</html>
