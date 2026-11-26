@@ -1,0 +1,2845 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LivePulse Sports Scoreboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Apply saved theme before first paint to prevent flash -->
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem('livepulse_theme');
+        if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <style>
+    :root,
+    [data-theme="dark"] {
+      --bg-page: #070b14;
+      --bg-header: rgba(11, 17, 32, 0.92);
+      --bg-surface: #111827;
+      --bg-surface-hover: #172033;
+      --bg-subtle: rgba(15, 23, 42, 0.72);
+      --bg-chip: #1e293b;
+      --bg-modal: #0f172a;
+      --border-main: rgba(51, 65, 85, 0.65);
+      --border-strong: rgba(71, 85, 105, 0.85);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-faint: #64748b;
+      --card-shadow: 0 10px 25px -5px rgba(2, 6, 23, 0.55);
+    }
+
+    [data-theme="light"] {
+      --bg-page: #f1f5f9;
+      --bg-header: rgba(255, 255, 255, 0.94);
+      --bg-surface: #ffffff;
+      --bg-surface-hover: #f8fafc;
+      --bg-subtle: #f8fafc;
+      --bg-chip: #e2e8f0;
+      --bg-modal: #ffffff;
+      --border-main: rgba(203, 213, 225, 0.95);
+      --border-strong: rgba(148, 163, 184, 0.95);
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #475569;
+      --text-faint: #64748b;
+      --card-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    .lp-header {
+      background-color: var(--bg-header);
+      border-color: var(--border-main);
+    }
+
+    .lp-surface {
+      background-color: var(--bg-surface);
+      border-color: var(--border-main);
+      box-shadow: var(--card-shadow);
+    }
+
+    .lp-surface-interactive:hover {
+      background-color: var(--bg-surface-hover);
+      border-color: var(--border-strong);
+    }
+
+    .lp-subtle {
+      background-color: var(--bg-subtle);
+      border-color: var(--border-main);
+    }
+
+    .lp-chip {
+      background-color: var(--bg-chip);
+      color: var(--text-secondary);
+    }
+
+    .lp-modal-surface {
+      background-color: var(--bg-modal);
+      border-color: var(--border-strong);
+    }
+
+    .lp-border {
+      border-color: var(--border-main);
+    }
+
+    .lp-text-primary {
+      color: var(--text-primary);
+    }
+
+    .lp-text-secondary {
+      color: var(--text-secondary);
+    }
+
+    .lp-text-muted {
+      color: var(--text-muted);
+    }
+
+    .lp-text-faint {
+      color: var(--text-faint);
+    }
+
+    .lp-row-hover:hover {
+      background-color: var(--bg-surface-hover);
+    }
+
+    /* Hide scrollbars on horizontal pill bars */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Score change pulse animation */
+    @keyframes scoreFlash {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.75);
+        border-color: #10b981;
+      }
+      50% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+        border-color: #34d399;
+      }
+      100% {
+        box-shadow: var(--card-shadow);
+      }
+    }
+
+    .score-pulse {
+      animation: scoreFlash 2.2s ease-out 2;
+    }
+
+    @keyframes deltaPop {
+      0% {
+        opacity: 0;
+        transform: translateY(6px) scale(0.85);
+      }
+      15% {
+        opacity: 1;
+        transform: translateY(0) scale(1.05);
+      }
+      85% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.95);
+      }
+    }
+
+    .delta-badge {
+      animation: deltaPop 4.5s ease forwards;
+    }
+
+    @keyframes redZoneGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+      }
+      50% {
+        box-shadow: 0 0 10px 2px rgba(239, 68, 68, 0.35);
+      }
+    }
+
+    .redzone-pill {
+      animation: redZoneGlow 1.8s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+
+  <!-- Sticky Top Header -->
+  <header class="sticky top-0 z-30 lp-header backdrop-blur-xl border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand + Feed Status -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/25">
+          LP
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight lp-text-primary">LivePulse</h1>
+            <span id="data-source-badge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              LIVE FEED
+            </span>
+          </div>
+          <p id="last-updated" class="text-[11px] lp-text-faint">Connecting to scoreboards...</p>
+        </div>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Light / Dark Theme Switch -->
+        <div role="group" aria-label="Theme Switch" class="inline-flex items-center p-0.5 rounded-xl lp-subtle border">
+          <button
+            id="theme-light-btn"
+            type="button"
+            title="Switch to Light Mode (Shortcut: T)"
+            class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
+          >
+            <span>☀️</span>
+            <span class="hidden sm:inline">Light</span>
+          </button>
+          <button
+            id="theme-dark-btn"
+            type="button"
+            title="Switch to Dark Mode (Shortcut: T)"
+            class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
+          >
+            <span>🌙</span>
+            <span class="hidden sm:inline">Dark</span>
+          </button>
+        </div>
+
+        <!-- Simulate Action Preview Button -->
+        <button
+          id="simulate-score-btn"
+          type="button"
+          title="Simulate a live score change & crunch-time alert (Shortcut: S)"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold lp-surface lp-surface-interactive border lp-text-secondary transition inline-flex items-center gap-1.5"
+        >
+          <span>⚡</span>
+          <span class="hidden md:inline">Simulate Action</span>
+        </button>
+
+        <!-- Sound Chime Toggle -->
+        <button
+          id="sound-toggle-btn"
+          type="button"
+          title="Toggle Web Audio Score Chimes"
+          class="p-2 rounded-xl lp-surface lp-surface-interactive border lp-text-secondary transition"
+        >
+          <span id="sound-on-icon" class="text-xs">🔊</span>
+          <span id="sound-off-icon" class="text-xs hidden">🔇</span>
+        </button>
+
+        <!-- Auto-Refresh Toggle + Countdown -->
+        <button
+          id="auto-refresh-toggle"
+          type="button"
+          title="Toggle 30-second Auto-Refresh"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 transition inline-flex items-center gap-1.5"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span class="hidden sm:inline">Auto</span>
+          <span id="countdown-badge" class="font-mono font-bold tabular-nums">30s</span>
+        </button>
+
+        <!-- Manual Force Refresh -->
+        <button
+          id="refresh-btn"
+          type="button"
+          title="Refresh Scores Now (Shortcut: R)"
+          class="p-2 rounded-xl lp-surface lp-surface-interactive border lp-text-primary transition"
+        >
+          <svg id="refresh-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+
+        <!-- Keyboard Shortcuts Help Button -->
+        <button
+          id="shortcuts-help-btn"
+          type="button"
+          title="Keyboard Shortcuts (?)"
+          class="px-2.5 py-1.5 rounded-xl lp-surface lp-surface-interactive border text-xs font-extrabold lp-text-secondary transition"
+        >
+          ?
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Diagnostic / Error Banner (Hidden unless an unexpected runtime error occurs) -->
+  <div id="diagnostic-banner" class="hidden bg-rose-500/15 border-b border-rose-500/30 px-4 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2 text-rose-600 dark:text-rose-300 font-medium">
+        <span>⚠️</span>
+        <span id="diagnostic-message">A display warning occurred.</span>
+      </div>
+      <button
+        id="diagnostic-reset-btn"
+        type="button"
+        class="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold transition"
+      >
+        Reset Preferences & Reload
+      </button>
+    </div>
+  </div>
+
+  <!-- Demo / Fallback Mode Notice Banner -->
+  <div id="fallback-banner" class="hidden bg-amber-500/15 border-b border-amber-500/30 px-4 py-2">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-medium">
+        <span>📡</span>
+        <span>Showing rich live simulation data (live ESPN endpoints unreachable or no games scheduled on this feed).</span>
+      </div>
+      <button
+        id="retry-live-btn"
+        type="button"
+        class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-semibold border border-amber-500/40 transition"
+      >
+        Retry Live Feed
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+    <!-- Date Navigation + League Tabs Row -->
+    <section class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <!-- Date Navigator -->
+      <div class="inline-flex items-center gap-1.5 p-1 rounded-2xl lp-surface border self-start">
+        <button
+          id="prev-day-btn"
+          type="button"
+          class="px-2.5 py-1.5 rounded-xl text-xs font-semibold lp-text-secondary lp-row-hover transition"
+        >
+          &larr; Yesterday
+        </button>
+        <button
+          id="today-btn"
+          type="button"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 transition"
+        >
+          Today
+        </button>
+        <input
+          id="date-picker"
+          type="date"
+          aria-label="Select Scoreboard Date"
+          class="px-2.5 py-1 rounded-xl text-xs font-semibold lp-subtle border lp-text-primary outline-none focus:border-emerald-500 transition"
+        />
+        <button
+          id="next-day-btn"
+          type="button"
+          class="px-2.5 py-1.5 rounded-xl text-xs font-semibold lp-text-secondary lp-row-hover transition"
+        >
+          Tomorrow &rarr;
+        </button>
+      </div>
+
+      <!-- League Filter Tabs + Customize Button -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+        <div id="league-tabs-container" class="flex items-center gap-1.5"></div>
+        <button
+          id="customize-leagues-btn"
+          type="button"
+          title="Reorder or Hide Leagues"
+          class="shrink-0 px-3 py-2 rounded-xl text-xs font-semibold lp-surface lp-surface-interactive border lp-text-muted transition inline-flex items-center gap-1.5"
+        >
+          <span>⚙️</span>
+          <span>Leagues</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Status Filter Pills, Search Input & View Switcher -->
+    <section class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <!-- Status Pills -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+        <button
+          data-status="ALL"
+          type="button"
+          class="status-pill active px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 transition shrink-0"
+        >
+          All Games
+        </button>
+        <button
+          data-status="LIVE"
+          type="button"
+          class="status-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold lp-surface lp-text-muted border transition shrink-0"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          Live Now
+        </button>
+        <button
+          data-status="ACTION"
+          type="button"
+          title="Show Red Zone, 4th Qtr/Final 2 mins, OT/Extra Innings, or Power Play games (Shortcut: A)"
+          class="status-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold lp-surface lp-text-muted border transition shrink-0"
+        >
+          <span class="text-amber-500">⚡</span>
+          Action Only
+        </button>
+        <button
+          data-status="FAVORITES"
+          type="button"
+          class="status-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold lp-surface lp-text-muted border transition shrink-0"
+        >
+          <span class="text-amber-500">★</span>
+          Favorites
+        </button>
+        <button
+          data-status="FINAL"
+          type="button"
+          class="status-pill px-3.5 py-1.5 rounded-full text-xs font-semibold lp-surface lp-text-muted border transition shrink-0"
+        >
+          Final
+        </button>
+        <button
+          data-status="UPCOMING"
+          type="button"
+          class="status-pill px-3.5 py-1.5 rounded-full text-xs font-semibold lp-surface lp-text-muted border transition shrink-0"
+        >
+          Upcoming
+        </button>
+      </div>
+
+      <!-- Search + Layout Switcher -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1 md:w-64">
+          <svg class="w-4 h-4 lp-text-faint absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z" />
+          </svg>
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Search team or league... (/)"
+            class="w-full lp-surface border focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl pl-9 pr-8 py-2 text-xs lp-text-primary placeholder-slate-400 outline-none transition"
+          />
+          <button
+            id="clear-search-btn"
+            type="button"
+            aria-label="Clear Search"
+            class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 lp-text-faint hover:lp-text-primary text-xs font-bold"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Card Grid vs Compact Ticker View -->
+        <div class="inline-flex items-center p-0.5 rounded-xl lp-surface border shrink-0">
+          <button
+            id="view-grid-btn"
+            type="button"
+            title="Card Grid View"
+            class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 transition"
+          >
+            Cards
+          </button>
+          <button
+            id="view-ticker-btn"
+            type="button"
+            title="Compact Ticker Table View"
+            class="px-2.5 py-1.5 rounded-lg text-xs font-bold lp-text-muted transition"
+          >
+            Ticker
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pinned Matchups Section -->
+    <section id="pinned-section" class="hidden space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-amber-500 text-sm">📌</span>
+          <h2 class="text-xs font-extrabold uppercase tracking-wider lp-text-secondary">Pinned Matchups</h2>
+          <span id="pinned-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-300">0</span>
+        </div>
+        <button
+          id="clear-pins-btn"
+          type="button"
+          class="text-xs font-semibold lp-text-faint hover:text-rose-500 transition"
+        >
+          Clear All Pins
+        </button>
+      </div>
+      <div id="pinned-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- Loading Skeleton Grid -->
+    <section id="loading-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div class="rounded-2xl lp-surface border p-4 space-y-3 animate-pulse">
+        <div class="h-4 w-24 rounded lp-chip"></div>
+        <div class="h-8 w-full rounded lp-chip"></div>
+        <div class="h-8 w-full rounded lp-chip"></div>
+        <div class="h-3 w-3/4 rounded lp-chip"></div>
+      </div>
+      <div class="rounded-2xl lp-surface border p-4 space-y-3 animate-pulse">
+        <div class="h-4 w-24 rounded lp-chip"></div>
+        <div class="h-8 w-full rounded lp-chip"></div>
+        <div class="h-8 w-full rounded lp-chip"></div>
+        <div class="h-3 w-3/4 rounded lp-chip"></div>
+      </div>
+      <div class="rounded-2xl lp-surface border p-4 space-y-3 animate-pulse">
+        <div class="h-4 w-24 rounded lp-chip"></div>
+        <div class="h-8 w-full rounded lp-chip"></div>
+        <div class="h-8 w-full rounded lp-chip"></div>
+        <div class="h-3 w-3/4 rounded lp-chip"></div>
+      </div>
+    </section>
+
+    <!-- Main Scoreboard Card Grid -->
+    <section id="scoreboard-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></section>
+
+    <!-- Compact Ticker Table View -->
+    <section id="scoreboard-ticker" class="hidden rounded-2xl lp-surface border overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b lp-border lp-subtle text-[11px] font-bold uppercase tracking-wider lp-text-muted">
+              <th class="py-2.5 px-4">League</th>
+              <th class="py-2.5 px-4">Status</th>
+              <th class="py-2.5 px-4">Matchup</th>
+              <th class="py-2.5 px-4 text-right">Score</th>
+              <th class="py-2.5 px-4 hidden md:table-cell">Situation / Notes</th>
+              <th class="py-2.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ticker-tbody" class="divide-y lp-border text-xs"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Empty Filter State -->
+    <section id="empty-state" class="hidden rounded-2xl lp-surface border p-10 text-center space-y-3">
+      <div class="text-3xl">🏟️</div>
+      <h3 class="text-base font-extrabold lp-text-primary">No matching games found</h3>
+      <p class="text-xs lp-text-muted max-w-md mx-auto">
+        Try switching leagues, selecting a different date, or clearing your active status and search filters.
+      </p>
+      <button
+        id="reset-filters-btn"
+        type="button"
+        class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition"
+      >
+        Reset All Filters
+      </button>
+    </section>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Draggable Floating Picture-in-Picture Mini Scoreboard -->
+  <div id="pip-mini-player" class="fixed bottom-5 left-5 z-40 hidden w-72 rounded-2xl lp-modal-surface border-2 border-emerald-500/60 shadow-2xl backdrop-blur-xl overflow-hidden select-none">
+    <div id="pip-drag-handle" class="flex items-center justify-between px-3.5 py-2 lp-subtle border-b lp-border cursor-move">
+      <div class="flex items-center gap-1.5 min-w-0">
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+        <span id="pip-league-status" class="text-[11px] font-bold lp-text-secondary truncate">LIVE</span>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <button id="pip-native-btn" type="button" title="Pop out into Browser Picture-in-Picture Window" class="p-1 rounded-lg lp-text-muted hover:text-emerald-500 transition text-xs font-bold">
+          ⧉
+        </button>
+        <button id="pip-expand-btn" type="button" title="Open Full Box Score" class="p-1 rounded-lg lp-text-muted hover:lp-text-primary transition text-xs font-bold">
+          ⤢
+        </button>
+        <button id="pip-close-btn" type="button" title="Close Mini Scoreboard" class="p-1 rounded-lg lp-text-muted hover:text-rose-500 transition text-xs font-bold">
+          ✕
+        </button>
+      </div>
+    </div>
+    <div id="pip-body" class="p-3.5 cursor-pointer"></div>
+  </div>
+
+  <!-- Box Score Detail Modal -->
+  <div id="game-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm transition-opacity"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 flex items-center justify-center">
+      <div class="relative w-full max-w-2xl rounded-2xl lp-modal-surface border shadow-2xl overflow-hidden">
+        <!-- Modal Top Bar -->
+        <div class="flex items-center justify-between px-5 py-3.5 border-b lp-border">
+          <div class="flex items-center gap-2.5">
+            <span id="modal-league-badge" class="px-2.5 py-0.5 rounded-md text-xs font-bold lp-chip">NFL</span>
+            <span id="modal-status-badge" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-500">LIVE</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="modal-pip-btn" type="button" title="Open Picture-in-Picture Mini Scoreboard" class="px-2.5 py-1 rounded-xl text-xs font-semibold lp-chip hover:text-emerald-500 transition inline-flex items-center gap-1">
+              <span>⧉</span>
+              <span class="hidden sm:inline">Mini PiP</span>
+            </button>
+            <button id="modal-pin-btn" type="button" title="Pin Matchup" class="p-1.5 rounded-xl lp-text-muted hover:text-amber-500 lp-row-hover transition">
+              📌
+            </button>
+            <button id="modal-alert-btn" type="button" title="Toggle Crunch-Time Alert" class="p-1.5 rounded-xl lp-text-muted hover:text-emerald-500 lp-row-hover transition">
+              🔔
+            </button>
+            <button id="close-modal-btn" type="button" aria-label="Close Modal" class="p-1.5 rounded-xl lp-text-muted hover:lp-text-primary lp-row-hover transition font-bold">
+              ✕
+            </button>
+          </div>
+        </div>
+        <!-- Modal Dynamic Body -->
+        <div id="modal-body" class="p-5 sm:p-6 space-y-5 max-h-[82vh] overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customize Leagues Modal -->
+  <div id="leagues-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+    <div id="leagues-modal-backdrop" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto p-4 flex items-center justify-center">
+      <div class="relative w-full max-w-md rounded-2xl lp-modal-surface border shadow-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b lp-border">
+          <div>
+            <h3 class="text-sm font-extrabold lp-text-primary">Customize Leagues</h3>
+            <p class="text-[11px] lp-text-muted">Reorder tabs or toggle league visibility</p>
+          </div>
+          <button id="close-leagues-modal-btn" type="button" class="p-1.5 rounded-xl lp-text-muted hover:lp-text-primary lp-row-hover transition font-bold">✕</button>
+        </div>
+        <div id="leagues-config-list" class="p-4 space-y-2 max-h-80 overflow-y-auto"></div>
+        <div class="flex items-center justify-between px-5 py-3.5 border-t lp-border lp-subtle">
+          <button id="reset-leagues-btn" type="button" class="text-xs font-semibold lp-text-muted hover:lp-text-primary transition">
+            Reset Default Order
+          </button>
+          <button id="done-leagues-btn" type="button" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+    <div id="shortcuts-backdrop" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto p-4 flex items-center justify-center">
+      <div class="relative w-full max-w-md rounded-2xl lp-modal-surface border shadow-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b lp-border">
+          <div class="flex items-center gap-2">
+            <span>⌨️</span>
+            <h3 class="text-sm font-extrabold lp-text-primary">Keyboard Shortcuts</h3>
+          </div>
+          <button id="close-shortcuts-btn" type="button" class="p-1.5 rounded-xl lp-text-muted hover:lp-text-primary lp-row-hover transition font-bold">✕</button>
+        </div>
+        <div class="p-5 space-y-2.5 text-xs">
+          <div class="flex items-center justify-between py-1.5 border-b lp-border">
+            <span class="lp-text-secondary">Focus Search Input</span>
+            <kbd class="px-2 py-0.5 rounded lp-chip font-mono font-bold">/</kbd>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b lp-border">
+            <span class="lp-text-secondary">Toggle Action Only (Red Zone / Crunch)</span>
+            <kbd class="px-2 py-0.5 rounded lp-chip font-mono font-bold">A</kbd>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b lp-border">
+            <span class="lp-text-secondary">Refresh Live Scores</span>
+            <kbd class="px-2 py-0.5 rounded lp-chip font-mono font-bold">R</kbd>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b lp-border">
+            <span class="lp-text-secondary">Toggle Light / Dark Mode</span>
+            <kbd class="px-2 py-0.5 rounded lp-chip font-mono font-bold">T</kbd>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b lp-border">
+            <span class="lp-text-secondary">Simulate Live Score Action</span>
+            <kbd class="px-2 py-0.5 rounded lp-chip font-mono font-bold">S</kbd>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b lp-border">
+            <span class="lp-text-secondary">Switch League Tabs (All + 1–7)</span>
+            <kbd class="px-2 py-0.5 rounded lp-chip font-mono font-bold">1 – 8</kbd>
+          </div>
+          <div class="flex items-center justify-between py-1">
+            <span class="lp-text-secondary">Close Modal or Mini Scoreboard</span>
+            <kbd class="px-2 py-0.5 rounded lp-chip font-mono font-bold">Esc</kbd>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t lp-border py-4 px-4 text-center text-xs lp-text-faint flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+    <span>LivePulse Sports Scoreboard &bull; Star games to pin &bull; Toggle bell for Crunch-Time alerts &bull; Click any matchup for full box score</span>
+    <button id="footer-shortcuts-btn" type="button" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md lp-chip font-semibold hover:lp-text-primary transition">
+      <kbd class="font-mono text-[10px]">?</kbd> Shortcuts
+    </button>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // Default League Definitions
+      const DEFAULT_LEAGUES = [
+        { key: 'NFL', label: 'NFL', icon: '🏈', path: 'football/nfl', visible: true },
+        { key: 'NBA', label: 'NBA', icon: '🏀', path: 'basketball/nba', visible: true },
+        { key: 'NHL', label: 'NHL', icon: '🏒', path: 'hockey/nhl', visible: true },
+        { key: 'MLB', label: 'MLB', icon: '⚾', path: 'baseball/mlb', visible: true },
+        { key: 'EPL', label: 'EPL', icon: '⚽', path: 'soccer/eng.1', visible: true },
+        { key: 'CFB', label: 'CFB', icon: '🏟️', path: 'football/college-football', visible: true },
+        { key: 'CBB', label: 'CBB', icon: '🏀', path: 'basketball/mens-college-basketball', visible: true }
+      ];
+
+      // Safe localStorage helpers
+      function readStorage(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) return fallback;
+          return JSON.parse(raw);
+        } catch (e) {
+          return fallback;
+        }
+      }
+
+      function writeStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          // Ignore storage quota / sandboxed iframe restrictions
+        }
+      }
+
+      function formatDateISO(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function getTodayISO() {
+        return formatDateISO(new Date());
+      }
+
+      function loadLeaguePrefs() {
+        const saved = readStorage('livepulse_leagues_v1', null);
+        if (!Array.isArray(saved) || saved.length === 0) {
+          return DEFAULT_LEAGUES.map(l => ({ ...l }));
+        }
+        const merged = [];
+        saved.forEach(item => {
+          const base = DEFAULT_LEAGUES.find(d => d.key === item.key);
+          if (base) {
+            merged.push({ ...base, visible: item.visible !== false });
+          }
+        });
+        DEFAULT_LEAGUES.forEach(base => {
+          if (!merged.some(m => m.key === base.key)) {
+            merged.push({ ...base });
+          }
+        });
+        return merged;
+      }
+
+      // Application State
+      const state = {
+        theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
+        leagues: loadLeaguePrefs(),
+        selectedLeague: 'ALL',
+        selectedStatus: 'ALL',
+        searchQuery: '',
+        selectedDate: getTodayISO(),
+        viewMode: readStorage('livepulse_view_mode', 'grid') === 'ticker' ? 'ticker' : 'grid',
+        soundEnabled: readStorage('livepulse_sound', true) !== false,
+        pinnedIds: new Set(readStorage('livepulse_pinned_games', [])),
+        favoriteTeams: new Set(readStorage('livepulse_fav_teams', ['KC', 'BOS', 'LAD', 'STL'])),
+        watchedIds: new Set(readStorage('livepulse_watched_games', [])),
+        crunchNotifiedIds: new Set(),
+        previousScores: new Map(),
+        scoreDeltas: new Map(),
+        games: [],
+        autoRefresh: true,
+        countdown: 30,
+        isUsingFallback: false,
+        activeGameId: null,
+        pipGameId: null,
+        nativePipWindow: null
+      };
+
+      // DOM Cache
+      const dom = {
+        themeLightBtn: document.getElementById('theme-light-btn'),
+        themeDarkBtn: document.getElementById('theme-dark-btn'),
+        diagnosticBanner: document.getElementById('diagnostic-banner'),
+        diagnosticMessage: document.getElementById('diagnostic-message'),
+        diagnosticResetBtn: document.getElementById('diagnostic-reset-btn'),
+        fallbackBanner: document.getElementById('fallback-banner'),
+        retryLiveBtn: document.getElementById('retry-live-btn'),
+        dataSourceBadge: document.getElementById('data-source-badge'),
+        lastUpdated: document.getElementById('last-updated'),
+        simulateScoreBtn: document.getElementById('simulate-score-btn'),
+        soundToggleBtn: document.getElementById('sound-toggle-btn'),
+        soundOnIcon: document.getElementById('sound-on-icon'),
+        soundOffIcon: document.getElementById('sound-off-icon'),
+        autoRefreshToggle: document.getElementById('auto-refresh-toggle'),
+        countdownBadge: document.getElementById('countdown-badge'),
+        refreshBtn: document.getElementById('refresh-btn'),
+        refreshIcon: document.getElementById('refresh-icon'),
+        shortcutsHelpBtn: document.getElementById('shortcuts-help-btn'),
+        footerShortcutsBtn: document.getElementById('footer-shortcuts-btn'),
+        prevDayBtn: document.getElementById('prev-day-btn'),
+        todayBtn: document.getElementById('today-btn'),
+        datePicker: document.getElementById('date-picker'),
+        nextDayBtn: document.getElementById('next-day-btn'),
+        leagueTabsContainer: document.getElementById('league-tabs-container'),
+        customizeLeaguesBtn: document.getElementById('customize-leagues-btn'),
+        statusPills: document.querySelectorAll('.status-pill'),
+        searchInput: document.getElementById('search-input'),
+        clearSearchBtn: document.getElementById('clear-search-btn'),
+        viewGridBtn: document.getElementById('view-grid-btn'),
+        viewTickerBtn: document.getElementById('view-ticker-btn'),
+        pinnedSection: document.getElementById('pinned-section'),
+        pinnedGrid: document.getElementById('pinned-grid'),
+        pinnedCountBadge: document.getElementById('pinned-count-badge'),
+        clearPinsBtn: document.getElementById('clear-pins-btn'),
+        loadingGrid: document.getElementById('loading-grid'),
+        grid: document.getElementById('scoreboard-grid'),
+        tickerWrapper: document.getElementById('scoreboard-ticker'),
+        tickerTbody: document.getElementById('ticker-tbody'),
+        emptyState: document.getElementById('empty-state'),
+        resetFiltersBtn: document.getElementById('reset-filters-btn'),
+        toastContainer: document.getElementById('toast-container'),
+        pipMiniPlayer: document.getElementById('pip-mini-player'),
+        pipDragHandle: document.getElementById('pip-drag-handle'),
+        pipLeagueStatus: document.getElementById('pip-league-status'),
+        pipNativeBtn: document.getElementById('pip-native-btn'),
+        pipExpandBtn: document.getElementById('pip-expand-btn'),
+        pipCloseBtn: document.getElementById('pip-close-btn'),
+        pipBody: document.getElementById('pip-body'),
+        modal: document.getElementById('game-modal'),
+        modalBackdrop: document.getElementById('modal-backdrop'),
+        closeModalBtn: document.getElementById('close-modal-btn'),
+        modalPipBtn: document.getElementById('modal-pip-btn'),
+        modalPinBtn: document.getElementById('modal-pin-btn'),
+        modalAlertBtn: document.getElementById('modal-alert-btn'),
+        modalLeagueBadge: document.getElementById('modal-league-badge'),
+        modalStatusBadge: document.getElementById('modal-status-badge'),
+        modalBody: document.getElementById('modal-body'),
+        leaguesModal: document.getElementById('leagues-modal'),
+        leaguesModalBackdrop: document.getElementById('leagues-modal-backdrop'),
+        closeLeaguesModalBtn: document.getElementById('close-leagues-modal-btn'),
+        leaguesConfigList: document.getElementById('leagues-config-list'),
+        resetLeaguesBtn: document.getElementById('reset-leagues-btn'),
+        doneLeaguesBtn: document.getElementById('done-leagues-btn'),
+        shortcutsModal: document.getElementById('shortcuts-modal'),
+        shortcutsBackdrop: document.getElementById('shortcuts-backdrop'),
+        closeShortcutsBtn: document.getElementById('close-shortcuts-btn')
+      };
+
+      // HTML Escape Utility
+      function escapeHTML(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      // Show Diagnostic Banner on unexpected error
+      function reportDiagnostic(msg) {
+        if (!dom.diagnosticBanner || !dom.diagnosticMessage) return;
+        dom.diagnosticMessage.textContent = msg;
+        dom.diagnosticBanner.classList.remove('hidden');
+      }
+
+      // Theme Management
+      function setTheme(theme) {
+        state.theme = theme === 'light' ? 'light' : 'dark';
+        if (state.theme === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+          dom.themeLightBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 bg-slate-900 text-white shadow-sm';
+          dom.themeDarkBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 lp-text-muted hover:lp-text-primary';
+        } else {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+          dom.themeDarkBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 bg-slate-100 text-slate-900 shadow-sm';
+          dom.themeLightBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 lp-text-muted hover:lp-text-primary';
+        }
+        try {
+          localStorage.setItem('livepulse_theme', state.theme);
+        } catch (e) {}
+        if (state.activeGameId) {
+          const activeGame = state.games.find(g => g.id === state.activeGameId);
+          if (activeGame) renderModalContent(activeGame);
+        }
+      }
+
+      // Synthesized Web Audio Chime (no external MP3 URLs)
+      function playAlertChime(type) {
+        if (!state.soundEnabled) return;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          const now = ctx.currentTime;
+          const freqs = type === 'crunch' ? [587.33, 880, 1174.66] : [523.25, 783.99];
+          freqs.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+            gain.gain.setValueAtTime(0.001, now + idx * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.12, now + idx * 0.09 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.09 + 0.28);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.09);
+            osc.stop(now + idx * 0.09 + 0.3);
+          });
+        } catch (e) {
+          // Audio blocked until user gesture
+        }
+      }
+
+      // Toast Notification Helper
+      function showToast({ title, message, accent = 'emerald', icon = '🔔' }) {
+        const colors = {
+          emerald: 'border-emerald-500/50 bg-emerald-950/95 text-emerald-100',
+          amber: 'border-amber-500/50 bg-amber-950/95 text-amber-100',
+          rose: 'border-rose-500/50 bg-rose-950/95 text-rose-100'
+        };
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-xl transition-all duration-300 flex items-start gap-3 ${colors[accent] || colors.emerald}`;
+        toast.innerHTML = `
+          <span class="text-base mt-0.5 shrink-0">${icon}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-extrabold tracking-tight">${escapeHTML(title)}</p>
+            <p class="text-[11px] opacity-90 mt-0.5 leading-snug">${escapeHTML(message)}</p>
+          </div>
+          <button type="button" class="text-xs opacity-70 hover:opacity-100 font-bold">✕</button>
+        `;
+        const closeBtn = toast.querySelector('button');
+        closeBtn.addEventListener('click', () => toast.remove());
+        dom.toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+          setTimeout(() => toast.remove(), 300);
+        }, 5000);
+      }
+
+      // Rich Multi-League Fallback Dataset (guarantees instant functionality offline/CORS)
+      function getFallbackGames(dateISO) {
+        const isToday = dateISO === getTodayISO();
+        const isPast = dateISO < getTodayISO();
+        const isFuture = dateISO > getTodayISO();
+
+        const liveStatus = (liveText, finalText, upcomingText) => {
+          if (isPast) return { cat: 'FINAL', text: finalText };
+          if (isFuture) return { cat: 'UPCOMING', text: upcomingText };
+          return { cat: 'LIVE', text: liveText };
+        };
+
+        const nflSt = liveStatus('Q4 1:48', 'Final', '8:20 PM ET');
+        const nbaSt = liveStatus('Q4 2:12', 'Final', '7:30 PM ET');
+        const mlbSt = liveStatus('Bot 9th', 'Final', '7:10 PM ET');
+        const nhlSt = liveStatus('3rd 4:19', 'Final/OT', '8:00 PM ET');
+        const eplSt = liveStatus("76'", 'FT', '12:30 PM ET');
+        const cfbSt = liveStatus('Q3 6:14', 'Final', '3:30 PM ET');
+        const cbbSt = liveStatus('2H 1:34', 'Final', '9:00 PM ET');
+
+        return [
+          {
+            id: `NFL-demo-1-${dateISO}`,
+            league: 'NFL',
+            leagueIcon: '🏈',
+            statusCategory: nflSt.cat,
+            statusText: nflSt.text,
+            periodDetail: nflSt.cat === 'LIVE' ? '2nd & 6 at KC 14' : nflSt.text,
+            isCrunchTime: nflSt.cat === 'LIVE',
+            situation: nflSt.cat === 'LIVE' ? {
+              type: 'football',
+              downDistance: '2nd & 6 at KC 14',
+              isRedZone: true,
+              possessionAbbr: 'BUF'
+            } : null,
+            odds: 'KC -2.5 | O/U 48.5',
+            winProb: { away: 46, home: 54 },
+            venue: 'GEHA Field at Arrowhead Stadium',
+            broadcast: 'NBC / Peacock',
+            headline: isFuture ? 'Spread: KC -2.5 • O/U: 48.5' : 'P. Mahomes: 284 YDS, 3 TD • J. Allen: 276 YDS, 2 TD',
+            plays: isFuture ? [] : [
+              { time: 'Q4 1:48', team: 'BUF', text: 'J. Allen pass short right to D. Kincaid to KC 14 for 9 yards (T. McDuffie).', isScoring: false },
+              { time: 'Q4 2:15', team: 'BUF', text: 'J. Cook up the middle to KC 23 for 6 yards (N. Bolton).', isScoring: false },
+              { time: 'Q4 4:52', team: 'KC', text: 'P. Mahomes pass deep middle to T. Kelce for 22 yards, TOUCHDOWN. (H. Butker extra point is GOOD)', isScoring: true },
+              { time: 'Q4 8:10', team: 'BUF', text: 'J. Allen scrambles left end for 14 yards, TOUCHDOWN. (T. Bass extra point is GOOD)', isScoring: true }
+            ],
+            away: {
+              abbr: 'BUF',
+              shortName: 'Bills',
+              name: 'Buffalo Bills',
+              record: '9-2',
+              score: isFuture ? '-' : 24,
+              color: '#00338D',
+              logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png',
+              winner: isPast ? false : false,
+              linescores: isFuture ? [] : [7, 7, 3, 7],
+              stats: isFuture ? [] : [
+                { label: 'Total Yards', value: '389' },
+                { label: 'Passing Yards', value: '276' },
+                { label: 'Rushing Yards', value: '113' },
+                { label: 'Turnovers', value: '1' }
+              ]
+            },
+            home: {
+              abbr: 'KC',
+              shortName: 'Chiefs',
+              name: 'Kansas City Chiefs',
+              record: '10-1',
+              score: isFuture ? '-' : 27,
+              color: '#E31837',
+              logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png',
+              winner: isPast ? true : false,
+              linescores: isFuture ? [] : [7, 10, 3, 7],
+              stats: isFuture ? [] : [
+                { label: 'Total Yards', value: '402' },
+                { label: 'Passing Yards', value: '284' },
+                { label: 'Rushing Yards', value: '118' },
+                { label: 'Turnovers', value: '0' }
+              ]
+            }
+          },
+          {
+            id: `NBA-demo-1-${dateISO}`,
+            league: 'NBA',
+            leagueIcon: '🏀',
+            statusCategory: nbaSt.cat,
+            statusText: nbaSt.text,
+            periodDetail: nbaSt.text,
+            isCrunchTime: nbaSt.cat === 'LIVE',
+            situation: null,
+            odds: 'BOS -5.5 | O/U 228.5',
+            winProb: { away: 38, home: 62 },
+            venue: 'TD Garden, Boston',
+            broadcast: 'TNT',
+            headline: isFuture ? 'Spread: BOS -5.5 • O/U: 228.5' : 'J. Tatum: 34 PTS, 8 REB • S. Curry: 31 PTS, 7 AST',
+            plays: isFuture ? [] : [
+              { time: 'Q4 2:12', team: 'GSW', text: 'S. Curry makes 27-foot three point pullup jump shot (D. Green assists).', isScoring: true },
+              { time: 'Q4 2:34', team: 'BOS', text: 'J. Tatum makes driving finger roll layup.', isScoring: true },
+              { time: 'Q4 3:19', team: 'BOS', text: 'J. Brown makes 16-foot step back jump shot.', isScoring: true }
+            ],
+            away: {
+              abbr: 'GSW',
+              shortName: 'Warriors',
+              name: 'Golden State Warriors',
+              record: '12-5',
+              score: isFuture ? '-' : 112,
+              color: '#1D428A',
+              logo: 'https://a.espncdn.com/i/teamlogos/nba/500/gs.png',
+              winner: false,
+              linescores: isFuture ? [] : [28, 30, 27, 27],
+              stats: isFuture ? [] : [
+                { label: 'FG%', value: '48.2%' },
+                { label: '3PT', value: '17-41' },
+                { label: 'Rebounds', value: '42' },
+                { label: 'Assists', value: '29' }
+              ]
+            },
+            home: {
+              abbr: 'BOS',
+              shortName: 'Celtics',
+              name: 'Boston Celtics',
+              record: '14-3',
+              score: isFuture ? '-' : 115,
+              color: '#007A33',
+              logo: 'https://a.espncdn.com/i/teamlogos/nba/500/bos.png',
+              winner: isPast ? true : false,
+              linescores: isFuture ? [] : [31, 27, 30, 27],
+              stats: isFuture ? [] : [
+                { label: 'FG%', value: '50.6%' },
+                { label: '3PT', value: '19-44' },
+                { label: 'Rebounds', value: '45' },
+                { label: 'Assists', value: '27' }
+              ]
+            }
+          },
+          {
+            id: `MLB-demo-1-${dateISO}`,
+            league: 'MLB',
+            leagueIcon: '⚾',
+            statusCategory: mlbSt.cat,
+            statusText: mlbSt.text,
+            periodDetail: mlbSt.text,
+            isCrunchTime: mlbSt.cat === 'LIVE',
+            situation: mlbSt.cat === 'LIVE' ? {
+              type: 'baseball',
+              onFirst: true,
+              onSecond: true,
+              onThird: true,
+              outs: 2,
+              balls: 3,
+              strikes: 2
+            } : null,
+            odds: 'LAD -145 | O/U 8.5',
+            winProb: { away: 44, home: 56 },
+            venue: 'Dodger Stadium, Los Angeles',
+            broadcast: 'FOX',
+            headline: isFuture ? 'Line: LAD -145 • O/U: 8.5' : 'At Bat: S. Ohtani (2-4, HR) • Bases Loaded, 2 Outs',
+            plays: isFuture ? [] : [
+              { time: 'Bot 9', team: 'LAD', text: 'M. Betts walks on a 3-2 slider. Bases loaded, 2 outs. S. Ohtani steps to the plate.', isScoring: false },
+              { time: 'Top 7', team: 'NYY', text: 'A. Judge homers to center field (438 ft), J. Soto scores.', isScoring: true },
+              { time: 'Bot 5', team: 'LAD', text: 'S. Ohtani doubles to deep right-center, M. Betts scores.', isScoring: true }
+            ],
+            away: {
+              abbr: 'NYY',
+              shortName: 'Yankees',
+              name: 'New York Yankees',
+              record: '94-68',
+              score: isFuture ? '-' : 5,
+              color: '#132448',
+              logo: 'https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png',
+              winner: isPast ? true : false,
+              linescores: isFuture ? [] : [0, 1, 0, 0, 2, 0, 2, 0, 0],
+              stats: isFuture ? [] : [
+                { label: 'Hits', value: '9' },
+                { label: 'Errors', value: '0' },
+                { label: 'LOB', value: '6' }
+              ]
+            },
+            home: {
+              abbr: 'LAD',
+              shortName: 'Dodgers',
+              name: 'Los Angeles Dodgers',
+              record: '98-64',
+              score: isFuture ? '-' : 4,
+              color: '#005A9C',
+              logo: 'https://a.espncdn.com/i/teamlogos/mlb/500/lad.png',
+              winner: false,
+              linescores: isFuture ? [] : [1, 0, 0, 1, 2, 0, 0, 0, 0],
+              stats: isFuture ? [] : [
+                { label: 'Hits', value: '10' },
+                { label: 'Errors', value: '1' },
+                { label: 'LOB', value: '8' }
+              ]
+            }
+          },
+          {
+            id: `NHL-demo-1-${dateISO}`,
+            league: 'NHL',
+            leagueIcon: '🏒',
+            statusCategory: nhlSt.cat,
+            statusText: nhlSt.text,
+            periodDetail: nhlSt.text,
+            isCrunchTime: nhlSt.cat === 'LIVE',
+            situation: nhlSt.cat === 'LIVE' ? {
+              type: 'hockey',
+              powerPlayTeam: 'STL'
+            } : null,
+            odds: 'COL -135 | O/U 6.5',
+            winProb: { away: 48, home: 52 },
+            venue: 'Ball Arena, Denver',
+            broadcast: 'ESPN+',
+            headline: isFuture ? 'Line: COL -135 • O/U: 6.5' : 'R. Thomas: 1 G, 2 A • N. MacKinnon: 2 G',
+            plays: isFuture ? [] : [
+              { time: 'P3 4:19', team: 'STL', text: 'Penalty to D. Toews (2 min Tripping). St. Louis goes on the Power Play.', isScoring: false },
+              { time: 'P3 7:45', team: 'COL', text: 'GOAL: N. MacKinnon Wrist Shot, assists: C. Makar, M. Rantanen.', isScoring: true },
+              { time: 'P2 11:20', team: 'STL', text: 'GOAL: J. Kyrou Snap Shot, assists: R. Thomas, P. Buchnevich.', isScoring: true }
+            ],
+            away: {
+              abbr: 'STL',
+              shortName: 'Blues',
+              name: 'St. Louis Blues',
+              record: '11-9-1',
+              score: isFuture ? '-' : 3,
+              color: '#002F87',
+              logo: 'https://a.espncdn.com/i/teamlogos/nhl/500/stl.png',
+              winner: false,
+              linescores: isFuture ? [] : [1, 1, 1],
+              stats: isFuture ? [] : [
+                { label: 'Shots on Goal', value: '31' },
+                { label: 'Power Play', value: '1/3' },
+                { label: 'Hits', value: '24' }
+              ]
+            },
+            home: {
+              abbr: 'COL',
+              shortName: 'Avalanche',
+              name: 'Colorado Avalanche',
+              record: '12-8-0',
+              score: isFuture ? '-' : 3,
+              color: '#6F263D',
+              logo: 'https://a.espncdn.com/i/teamlogos/nhl/500/col.png',
+              winner: isPast ? true : false,
+              linescores: isFuture ? [] : [1, 1, 1],
+              stats: isFuture ? [] : [
+                { label: 'Shots on Goal', value: '34' },
+                { label: 'Power Play', value: '1/4' },
+                { label: 'Hits', value: '19' }
+              ]
+            }
+          },
+          {
+            id: `EPL-demo-1-${dateISO}`,
+            league: 'EPL',
+            leagueIcon: '⚽',
+            statusCategory: eplSt.cat,
+            statusText: eplSt.text,
+            periodDetail: eplSt.text,
+            isCrunchTime: false,
+            situation: null,
+            odds: 'LIV -110 | O/U 2.5',
+            winProb: { away: 24, home: 76 },
+            venue: 'Anfield, Liverpool',
+            broadcast: 'USA Network',
+            headline: isFuture ? 'Moneyline: LIV -110 • Draw +260' : "M. Salah 27', L. Díaz 64' • B. Saka 41'",
+            plays: isFuture ? [] : [
+              { time: "64'", team: 'LIV', text: 'GOAL! Luis Díaz right-footed shot from the center of the box to the bottom right corner.', isScoring: true },
+              { time: "41'", team: 'ARS', text: 'GOAL! Bukayo Saka left-footed curler from the right side of the box.', isScoring: true },
+              { time: "27'", team: 'LIV', text: 'GOAL! Mohamed Salah left-footed finish on the counter-attack.', isScoring: true }
+            ],
+            away: {
+              abbr: 'ARS',
+              shortName: 'Arsenal',
+              name: 'Arsenal FC',
+              record: '8-3-1',
+              score: isFuture ? '-' : 1,
+              color: '#EF0107',
+              logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/359.png',
+              winner: false,
+              linescores: [],
+              stats: isFuture ? [] : [
+                { label: 'Possession', value: '48%' },
+                { label: 'Shots on Target', value: '4' },
+                { label: 'Corners', value: '5' }
+              ]
+            },
+            home: {
+              abbr: 'LIV',
+              shortName: 'Liverpool',
+              name: 'Liverpool FC',
+              record: '10-1-1',
+              score: isFuture ? '-' : 2,
+              color: '#C8102E',
+              logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/364.png',
+              winner: isPast ? true : false,
+              linescores: [],
+              stats: isFuture ? [] : [
+                { label: 'Possession', value: '52%' },
+                { label: 'Shots on Target', value: '6' },
+                { label: 'Corners', value: '7' }
+              ]
+            }
+          },
+          {
+            id: `CFB-demo-1-${dateISO}`,
+            league: 'CFB',
+            leagueIcon: '🏟️',
+            statusCategory: cfbSt.cat,
+            statusText: cfbSt.text,
+            periodDetail: cfbSt.text,
+            isCrunchTime: false,
+            situation: cfbSt.cat === 'LIVE' ? {
+              type: 'football',
+              downDistance: '1st & 10 at MICH 34',
+              isRedZone: false,
+              possessionAbbr: 'OSU'
+            } : null,
+            odds: 'OSU -14.5 | O/U 45.5',
+            winProb: { away: 29, home: 71 },
+            venue: 'Ohio Stadium, Columbus',
+            broadcast: 'FOX',
+            headline: isFuture ? 'Spread: OSU -14.5 • O/U: 45.5' : 'W. Howard: 245 YDS, 2 TD • J. Smith: 7 REC, 112 YDS',
+            plays: isFuture ? [] : [
+              { time: 'Q3 6:14', team: 'OSU', text: 'W. Howard pass complete to J. Smith for 18 yards to MICH 34.', isScoring: false },
+              { time: 'Q2 1:12', team: 'OSU', text: 'T. Henderson 12 yard rush, TOUCHDOWN.', isScoring: true }
+            ],
+            away: {
+              abbr: 'MICH',
+              shortName: 'Wolverines',
+              name: 'Michigan Wolverines',
+              record: '6-5',
+              score: isFuture ? '-' : 13,
+              color: '#00274C',
+              logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/130.png',
+              winner: false,
+              linescores: isFuture ? [] : [3, 7, 3],
+              stats: isFuture ? [] : [
+                { label: 'Total Yards', value: '248' },
+                { label: 'First Downs', value: '14' }
+              ]
+            },
+            home: {
+              abbr: 'OSU',
+              shortName: 'Buckeyes',
+              name: 'Ohio State Buckeyes',
+              record: '10-1',
+              score: isFuture ? '-' : 24,
+              color: '#BB0000',
+              logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/194.png',
+              winner: isPast ? true : false,
+              linescores: isFuture ? [] : [7, 14, 3],
+              stats: isFuture ? [] : [
+                { label: 'Total Yards', value: '364' },
+                { label: 'First Downs', value: '21' }
+              ]
+            }
+          },
+          {
+            id: `CBB-demo-1-${dateISO}`,
+            league: 'CBB',
+            leagueIcon: '🏀',
+            statusCategory: cbbSt.cat,
+            statusText: cbbSt.text,
+            periodDetail: cbbSt.text,
+            isCrunchTime: cbbSt.cat === 'LIVE',
+            situation: null,
+            odds: 'KU -2.5 | O/U 149.5',
+            winProb: { away: 47, home: 53 },
+            venue: 'Allen Fieldhouse, Lawrence',
+            broadcast: 'ESPN',
+            headline: isFuture ? 'Spread: KU -2.5 • O/U: 149.5' : 'H. Dickinson: 18 PTS, 9 REB • C. Flagg: 21 PTS',
+            plays: isFuture ? [] : [
+              { time: '2H 1:34', team: 'KU', text: 'H. Dickinson makes hook shot in the paint (D. Harris assists).', isScoring: true },
+              { time: '2H 2:05', team: 'DUKE', text: 'C. Flagg makes two-handed dunk off baseline cut.', isScoring: true }
+            ],
+            away: {
+              abbr: 'DUKE',
+              shortName: 'Blue Devils',
+              name: 'Duke Blue Devils',
+              record: '5-1',
+              score: isFuture ? '-' : 72,
+              color: '#003087',
+              logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/150.png',
+              winner: false,
+              linescores: isFuture ? [] : [35, 37],
+              stats: isFuture ? [] : [
+                { label: 'FG%', value: '46.4%' },
+                { label: 'Rebounds', value: '33' }
+              ]
+            },
+            home: {
+              abbr: 'KU',
+              shortName: 'Jayhawks',
+              name: 'Kansas Jayhawks',
+              record: '6-0',
+              score: isFuture ? '-' : 74,
+              color: '#0051BA',
+              logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/2305.png',
+              winner: isPast ? true : false,
+              linescores: isFuture ? [] : [36, 38],
+              stats: isFuture ? [] : [
+                { label: 'FG%', value: '49.1%' },
+                { label: 'Rebounds', value: '36' }
+              ]
+            }
+          }
+        ];
+      }
+
+      // Safely parse a single ESPN event object
+      function parseEspnEvent(event, leagueConfig) {
+        try {
+          const competition = event?.competitions?.[0];
+          if (!competition) return null;
+
+          const competitors = competition.competitors || [];
+          const homeComp = competitors.find(c => c.homeAway === 'home') || competitors[0];
+          const awayComp = competitors.find(c => c.homeAway === 'away') || competitors[1];
+          if (!homeComp || !awayComp) return null;
+
+          const statusObj = competition.status || event.status || {};
+          const stateRaw = statusObj.type?.state || 'pre';
+          const statusCategory = stateRaw === 'in' ? 'LIVE' : stateRaw === 'post' ? 'FINAL' : 'UPCOMING';
+          const statusText = statusObj.type?.shortDetail || statusObj.type?.detail || 'Scheduled';
+          const period = Number(statusObj.period) || 0;
+          const clockSecs = Number(statusObj.clock) || 0;
+
+          const parseTeam = (comp) => {
+            const team = comp.team || {};
+            const abbr = team.abbreviation || team.shortDisplayName || 'TM';
+            const rawScore = comp.score;
+            const parsedScore = statusCategory === 'UPCOMING'
+              ? '-'
+              : (rawScore !== undefined && rawScore !== null && rawScore !== '' ? Number(rawScore) : 0);
+
+            const linescores = Array.isArray(comp.linescores)
+              ? comp.linescores.map(ls => (ls?.value !== undefined ? ls.value : '-'))
+              : [];
+
+            const stats = Array.isArray(comp.statistics)
+              ? comp.statistics.slice(0, 5).map(st => ({
+                  label: st.label || st.abbreviation || st.name || 'Stat',
+                  value: st.displayValue !== undefined ? String(st.displayValue) : '-'
+                }))
+              : [];
+
+            const rawColor = team.color ? `#${String(team.color).replace(/^#/, '')}` : '#334155';
+
+            return {
+              abbr,
+              shortName: team.shortDisplayName || team.name || abbr,
+              name: team.displayName || team.name || abbr,
+              record: comp.records?.[0]?.summary || '',
+              score: Number.isNaN(parsedScore) ? (rawScore || 0) : parsedScore,
+              color: rawColor,
+              logo: team.logo || `https://a.espncdn.com/i/teamlogos/leagues/500/${leagueConfig.key.toLowerCase()}.png`,
+              winner: Boolean(comp.winner),
+              linescores,
+              stats
+            };
+          };
+
+          const away = parseTeam(awayComp);
+          const home = parseTeam(homeComp);
+
+          // Situation Parsing (Football, Baseball, Hockey)
+          const sit = competition.situation;
+          let situation = null;
+          if (statusCategory === 'LIVE' && sit) {
+            if (leagueConfig.key === 'NFL' || leagueConfig.key === 'CFB') {
+              const possTeam = sit.possession === homeComp.id ? home.abbr : sit.possession === awayComp.id ? away.abbr : '';
+              if (sit.downDistanceText || sit.isRedZone) {
+                situation = {
+                  type: 'football',
+                  downDistance: sit.downDistanceText || '',
+                  isRedZone: Boolean(sit.isRedZone),
+                  possessionAbbr: possTeam
+                };
+              }
+            } else if (leagueConfig.key === 'MLB') {
+              situation = {
+                type: 'baseball',
+                onFirst: Boolean(sit.onFirst),
+                onSecond: Boolean(sit.onSecond),
+                onThird: Boolean(sit.onThird),
+                outs: Number(sit.outs) || 0,
+                balls: Number(sit.balls) || 0,
+                strikes: Number(sit.strikes) || 0
+              };
+            } else if (leagueConfig.key === 'NHL') {
+              if (sit.powerPlay || sit.strength) {
+                situation = {
+                  type: 'hockey',
+                  powerPlayTeam: sit.strength || 'PP'
+                };
+              }
+            }
+          }
+
+          // Crunch-Time heuristic
+          let isCrunchTime = false;
+          if (statusCategory === 'LIVE') {
+            const scoreDiff = Math.abs((Number(home.score) || 0) - (Number(away.score) || 0));
+            if ((leagueConfig.key === 'NFL' || leagueConfig.key === 'CFB') && period >= 4 && scoreDiff <= 8) {
+              isCrunchTime = true;
+            } else if ((leagueConfig.key === 'NBA' || leagueConfig.key === 'CBB') && ((leagueConfig.key === 'NBA' && period >= 4) || (leagueConfig.key === 'CBB' && period >= 2)) && clockSecs <= 180 && scoreDiff <= 8) {
+              isCrunchTime = true;
+            } else if (leagueConfig.key === 'NHL' && period >= 3 && scoreDiff <= 1) {
+              isCrunchTime = true;
+            } else if (leagueConfig.key === 'MLB' && period >= 9 && scoreDiff <= 2) {
+              isCrunchTime = true;
+            }
+          }
+
+          // Odds & Win Probability
+          const oddsObj = competition.odds?.[0];
+          const oddsParts = [];
+          if (oddsObj?.details) oddsParts.push(oddsObj.details);
+          if (oddsObj?.overUnder) oddsParts.push(`O/U ${oddsObj.overUnder}`);
+          const oddsText = oddsParts.join(' | ');
+
+          let winProb = null;
+          if (sit?.lastPlay?.probability) {
+            const homeWp = Math.round((Number(sit.lastPlay.probability.homeWinPercentage) || 0.5) * 100);
+            winProb = { away: Math.max(1, Math.min(99, 100 - homeWp)), home: Math.max(1, Math.min(99, homeWp)) };
+          } else if (statusCategory !== 'UPCOMING' && typeof home.score === 'number' && typeof away.score === 'number') {
+            const diff = home.score - away.score;
+            const estHome = Math.max(8, Math.min(92, Math.round(50 + diff * 3)));
+            winProb = { away: 100 - estHome, home: estHome };
+          }
+
+          // Recent Plays & Scoring Feed
+          const plays = [];
+          if (sit?.lastPlay?.text) {
+            const lastTeamAbbr = sit.lastPlay.team?.id === homeComp.id
+              ? home.abbr
+              : sit.lastPlay.team?.id === awayComp.id
+              ? away.abbr
+              : leagueConfig.key;
+            plays.push({
+              time: sit.lastPlay.clock?.displayValue ? `P${period} ${sit.lastPlay.clock.displayValue}` : statusText,
+              team: lastTeamAbbr,
+              text: sit.lastPlay.text,
+              isScoring: Boolean(sit.lastPlay.scoreValue && sit.lastPlay.scoreValue > 0)
+            });
+          }
+          if (Array.isArray(competition.details)) {
+            competition.details.slice(-8).reverse().forEach(det => {
+              const detTeamAbbr = det.team?.id === homeComp.id
+                ? home.abbr
+                : det.team?.id === awayComp.id
+                ? away.abbr
+                : leagueConfig.key;
+              const athleteName = det.athletesInvolved?.[0]?.displayName || '';
+              const detType = det.type?.text || 'Scoring Play';
+              const detClock = det.clock?.displayValue || '';
+              if (athleteName || detType) {
+                plays.push({
+                  time: detClock,
+                  team: detTeamAbbr,
+                  text: `${detType}${athleteName ? ` — ${athleteName}` : ''}`,
+                  isScoring: true
+                });
+              }
+            });
+          }
+
+          const headline = competition.headlines?.[0]?.shortLinkText ||
+                           competition.headlines?.[0]?.description ||
+                           sit?.lastPlay?.text ||
+                           oddsText ||
+                           competition.venue?.fullName || '';
+
+          const broadcast = competition.broadcasts?.[0]?.names?.join(', ') ||
+                            competition.geoBroadcasts?.[0]?.media?.shortName || '';
+
+          return {
+            id: `${leagueConfig.key}-${event.id}`,
+            league: leagueConfig.key,
+            leagueIcon: leagueConfig.icon,
+            statusCategory,
+            statusText,
+            periodDetail: situation?.downDistance || statusObj.type?.detail || statusText,
+            isCrunchTime,
+            situation,
+            odds: oddsText,
+            winProb,
+            venue: competition.venue?.fullName || '',
+            broadcast,
+            headline,
+            plays,
+            away,
+            home
+          };
+        } catch (err) {
+          console.warn('Skipped malformed ESPN event:', err);
+          return null;
+        }
+      }
+
+      // Sort games: Pinned -> Live -> Upcoming -> Final
+      function sortGames(list) {
+        const order = { LIVE: 0, UPCOMING: 1, FINAL: 2 };
+        return [...list].sort((a, b) => {
+          const aPin = state.pinnedIds.has(a.id) ? 0 : 1;
+          const bPin = state.pinnedIds.has(b.id) ? 0 : 1;
+          if (aPin !== bPin) return aPin - bPin;
+          const aOrd = order[a.statusCategory] ?? 3;
+          const bOrd = order[b.statusCategory] ?? 3;
+          if (aOrd !== bOrd) return aOrd - bOrd;
+          return a.league.localeCompare(b.league);
+        });
+      }
+
+      // Compare incoming scores against previous poll cycle for +N badges & alerts
+      function processScoreDiffsAndAlerts(incomingGames) {
+        incomingGames.forEach(game => {
+          const prev = state.previousScores.get(game.id);
+          const awayNum = typeof game.away.score === 'number' ? game.away.score : null;
+          const homeNum = typeof game.home.score === 'number' ? game.home.score : null;
+
+          if (prev && awayNum !== null && homeNum !== null) {
+            const awayDiff = awayNum - prev.away;
+            const homeDiff = homeNum - prev.home;
+            if (awayDiff > 0 || homeDiff > 0) {
+              state.scoreDeltas.set(game.id, {
+                away: awayDiff > 0 ? awayDiff : 0,
+                home: homeDiff > 0 ? homeDiff : 0,
+                expiresAt: Date.now() + 5500
+              });
+              if (state.watchedIds.has(game.id) || state.pinnedIds.has(game.id)) {
+                const scorer = awayDiff > 0 ? `${game.away.shortName} (+${awayDiff})` : `${game.home.shortName} (+${homeDiff})`;
+                playAlertChime('score');
+                showToast({
+                  title: `${game.leagueIcon} Score Update: ${scorer}`,
+                  message: `${game.away.abbr} ${awayNum} – ${homeNum} ${game.home.abbr} (${game.statusText})`,
+                  accent: 'emerald',
+                  icon: '🔥'
+                });
+              }
+            }
+          }
+
+          if (awayNum !== null && homeNum !== null) {
+            state.previousScores.set(game.id, { away: awayNum, home: homeNum });
+          }
+
+          if (game.isCrunchTime && state.watchedIds.has(game.id) && !state.crunchNotifiedIds.has(game.id)) {
+            state.crunchNotifiedIds.add(game.id);
+            playAlertChime('crunch');
+            showToast({
+              title: `Crunch-Time Alert (${game.league})`,
+              message: `${game.away.abbr} ${game.away.score} @ ${game.home.abbr} ${game.home.score} — ${game.statusText}`,
+              accent: 'rose',
+              icon: '🚨'
+            });
+          }
+        });
+      }
+
+      // Fetch live scores concurrently from ESPN API with 8s AbortController timeout
+      async function fetchScores(isManual = false) {
+        if (isManual && dom.refreshIcon) {
+          dom.refreshIcon.classList.add('animate-spin');
+        }
+
+        const activeLeagues = state.leagues.filter(l => l.visible);
+        const leaguesToQuery = activeLeagues.length > 0 ? activeLeagues : DEFAULT_LEAGUES;
+        const dateCompact = state.selectedDate.replace(/-/g, '');
+        const isToday = state.selectedDate === getTodayISO();
+
+        try {
+          const requests = leaguesToQuery.map(async (league) => {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 8000);
+            try {
+              const url = isToday
+                ? `https://site.api.espn.com/apis/site/v2/sports/${league.path}/scoreboard`
+                : `https://site.api.espn.com/apis/site/v2/sports/${league.path}/scoreboard?dates=${dateCompact}`;
+              const resp = await fetch(url, { signal: controller.signal });
+              clearTimeout(timer);
+              if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+              const json = await resp.json();
+              const events = Array.isArray(json?.events) ? json.events : [];
+              return events.map(ev => parseEspnEvent(ev, league)).filter(Boolean);
+            } catch (err) {
+              clearTimeout(timer);
+              throw err;
+            }
+          });
+
+          const settled = await Promise.allSettled(requests);
+          let combined = [];
+          settled.forEach(res => {
+            if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+              combined = combined.concat(res.value);
+            }
+          });
+
+          if (combined.length > 0) {
+            state.isUsingFallback = false;
+            dom.fallbackBanner.classList.add('hidden');
+            dom.dataSourceBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> LIVE FEED`;
+            dom.dataSourceBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30';
+            processScoreDiffsAndAlerts(combined);
+            state.games = sortGames(combined);
+          } else {
+            throw new Error('Zero live events returned');
+          }
+        } catch (err) {
+          state.isUsingFallback = true;
+          dom.fallbackBanner.classList.remove('hidden');
+          dom.dataSourceBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> DEMO MODE`;
+          dom.dataSourceBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30';
+          const fallback = getFallbackGames(state.selectedDate);
+          processScoreDiffsAndAlerts(fallback);
+          state.games = sortGames(fallback);
+        } finally {
+          dom.loadingGrid.classList.add('hidden');
+          const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          dom.lastUpdated.textContent = `Updated ${nowStr} • ${state.selectedDate}`;
+          state.countdown = 30;
+          renderAll();
+          if (state.activeGameId) {
+            const refreshed = state.games.find(g => g.id === state.activeGameId);
+            if (refreshed) renderModalContent(refreshed);
+          }
+          if (state.pipGameId) {
+            renderPipMiniPlayer();
+          }
+          setTimeout(() => {
+            if (dom.refreshIcon) dom.refreshIcon.classList.remove('animate-spin');
+          }, 450);
+        }
+      }
+
+      // Simulate Live Scoring Action for instant preview
+      function simulateLiveScoreAction() {
+        const liveGames = state.games.filter(g => g.statusCategory === 'LIVE');
+        const pool = liveGames.length > 0 ? liveGames : state.games;
+        if (pool.length === 0) return;
+
+        const target = pool[Math.floor(Math.random() * pool.length)];
+        const side = Math.random() > 0.5 ? 'home' : 'away';
+        const deltaMap = { NFL: 7, CFB: 7, NBA: 3, CBB: 3, NHL: 1, MLB: 1, EPL: 1 };
+        const delta = deltaMap[target.league] || 2;
+
+        const updated = state.games.map(g => {
+          if (g.id !== target.id) return g;
+          const clone = JSON.parse(JSON.stringify(g));
+          clone.statusCategory = 'LIVE';
+          if (clone.statusText === 'Final' || clone.statusText.includes('ET')) {
+            clone.statusText = 'Q4 1:15';
+          }
+          clone.isCrunchTime = true;
+          const curr = typeof clone[side].score === 'number' ? clone[side].score : 0;
+          clone[side].score = curr + delta;
+          if (Array.isArray(clone[side].linescores) && clone[side].linescores.length > 0) {
+            const lastIdx = clone[side].linescores.length - 1;
+            clone[side].linescores[lastIdx] = (Number(clone[side].linescores[lastIdx]) || 0) + delta;
+          }
+          if (!Array.isArray(clone.plays)) clone.plays = [];
+          clone.plays.unshift({
+            time: 'JUST NOW',
+            team: clone[side].abbr,
+            text: `${clone[side].shortName} scores +${delta} in crunch time!`,
+            isScoring: true
+          });
+          return clone;
+        });
+
+        state.watchedIds.add(target.id);
+        processScoreDiffsAndAlerts(updated);
+        state.games = sortGames(updated);
+        renderAll();
+
+        if (state.activeGameId === target.id) {
+          const refreshed = state.games.find(g => g.id === target.id);
+          if (refreshed) renderModalContent(refreshed);
+        }
+        if (state.pipGameId === target.id) {
+          renderPipMiniPlayer();
+        }
+      }
+
+      // Render League Tabs
+      function renderLeagueTabs() {
+        const visibleLeagues = state.leagues.filter(l => l.visible);
+        const totalGames = state.games.length;
+        const totalLive = state.games.filter(g => g.statusCategory === 'LIVE').length;
+
+        const allActive = state.selectedLeague === 'ALL';
+        let html = `
+          <button
+            type="button"
+            data-league="ALL"
+            class="shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold border transition inline-flex items-center gap-1.5 ${
+              allActive
+                ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20'
+                : 'lp-surface lp-surface-interactive lp-text-secondary'
+            }"
+          >
+            <span>🌐 All Leagues</span>
+            <span class="px-1.5 py-0.2 rounded-md text-[10px] ${allActive ? 'bg-white/20 text-white' : 'lp-chip'}">${totalLive > 0 ? `${totalLive} Live / ` : ''}${totalGames}</span>
+          </button>
+        `;
+
+        visibleLeagues.forEach(lg => {
+          const lgGames = state.games.filter(g => g.league === lg.key);
+          const lgLive = lgGames.filter(g => g.statusCategory === 'LIVE').length;
+          const isActive = state.selectedLeague === lg.key;
+          html += `
+            <button
+              type="button"
+              data-league="${escapeHTML(lg.key)}"
+              class="shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold border transition inline-flex items-center gap-1.5 ${
+                isActive
+                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20'
+                  : 'lp-surface lp-surface-interactive lp-text-secondary'
+              }"
+            >
+              <span>${lg.icon} ${escapeHTML(lg.label)}</span>
+              <span class="px-1.5 py-0.2 rounded-md text-[10px] ${isActive ? 'bg-white/20 text-white' : 'lp-chip'}">${lgLive > 0 ? `${lgLive}/` : ''}${lgGames.length}</span>
+            </button>
+          `;
+        });
+
+        dom.leagueTabsContainer.innerHTML = html;
+        dom.leagueTabsContainer.querySelectorAll('button[data-league]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.selectedLeague = btn.dataset.league;
+            renderLeagueTabs();
+            renderScoreboard();
+          });
+        });
+      }
+
+      // Render Sport-Specific Situational Widget
+      function renderSituationHTML(game) {
+        const sit = game.situation;
+        if (!sit) {
+          if (game.statusCategory === 'UPCOMING' && game.odds) {
+            return `<span class="text-[11px] font-medium lp-text-muted">📊 ${escapeHTML(game.odds)}</span>`;
+          }
+          return game.headline
+            ? `<span class="text-[11px] lp-text-muted truncate">${escapeHTML(game.headline)}</span>`
+            : '';
+        }
+
+        if (sit.type === 'football') {
+          return `
+            <div class="flex items-center gap-2 flex-wrap">
+              ${sit.isRedZone ? `<span class="redzone-pill px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-rose-600 text-white tracking-wider">RED ZONE</span>` : ''}
+              ${sit.possessionAbbr ? `<span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">🏈 ${escapeHTML(sit.possessionAbbr)}</span>` : ''}
+              <span class="text-[11px] font-semibold lp-text-secondary">${escapeHTML(sit.downDistance)}</span>
+            </div>
+          `;
+        }
+
+        if (sit.type === 'baseball') {
+          const b1 = sit.onFirst ? '#f59e0b' : 'transparent';
+          const b2 = sit.onSecond ? '#f59e0b' : 'transparent';
+          const b3 = sit.onThird ? '#f59e0b' : 'transparent';
+          return `
+            <div class="flex items-center gap-2.5">
+              <svg width="26" height="22" viewBox="0 0 26 22" class="shrink-0" aria-label="Bases Occupied">
+                <polygon points="13,2 17,6 13,10 9,6" fill="${b2}" stroke="#94a3b8" stroke-width="1.4" />
+                <polygon points="20,9 24,13 20,17 16,13" fill="${b1}" stroke="#94a3b8" stroke-width="1.4" />
+                <polygon points="6,9 10,13 6,17 2,13" fill="${b3}" stroke="#94a3b8" stroke-width="1.4" />
+              </svg>
+              <span class="text-[11px] font-semibold lp-text-secondary">
+                ${sit.outs} Out${sit.outs === 1 ? '' : 's'} &bull; Count ${sit.balls}-${sit.strikes}
+              </span>
+            </div>
+          `;
+        }
+
+        if (sit.type === 'hockey') {
+          return `
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40">
+                ⚡ POWER PLAY (${escapeHTML(sit.powerPlayTeam)})
+              </span>
+            </div>
+          `;
+        }
+
+        return '';
+      }
+
+      // Build Team Logo HTML with clean fallback badge
+      function renderTeamLogo(team) {
+        return `
+          <div class="w-7 h-7 rounded-lg lp-subtle border flex items-center justify-center overflow-hidden shrink-0">
+            <img
+              src="${escapeHTML(team.logo)}"
+              alt="${escapeHTML(team.abbr)}"
+              class="w-5 h-5 object-contain"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <span style="display:none; background-color:${escapeHTML(team.color)}" class="w-full h-full items-center justify-center text-[10px] font-black text-white">
+              ${escapeHTML(team.abbr.slice(0, 3))}
+            </span>
+          </div>
+        `;
+      }
+
+      // Build Game Card HTML
+      function buildGameCardHTML(game) {
+        const isLive = game.statusCategory === 'LIVE';
+        const isFinal = game.statusCategory === 'FINAL';
+        const isPinned = state.pinnedIds.has(game.id);
+        const isWatched = state.watchedIds.has(game.id);
+        const awayFav = state.favoriteTeams.has(game.away.abbr);
+        const homeFav = state.favoriteTeams.has(game.home.abbr);
+
+        const deltaInfo = state.scoreDeltas.get(game.id);
+        const hasActiveDelta = deltaInfo && deltaInfo.expiresAt > Date.now();
+        const awayDelta = hasActiveDelta && deltaInfo.away > 0 ? `<span class="delta-badge px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-white">+${deltaInfo.away}</span>` : '';
+        const homeDelta = hasActiveDelta && deltaInfo.home > 0 ? `<span class="delta-badge px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-white">+${deltaInfo.home}</span>` : '';
+
+        const awayScoreNum = typeof game.away.score === 'number' ? game.away.score : null;
+        const homeScoreNum = typeof game.home.score === 'number' ? game.home.score : null;
+        const awayLeading = isFinal && awayScoreNum !== null && homeScoreNum !== null && awayScoreNum > homeScoreNum;
+        const homeLeading = isFinal && awayScoreNum !== null && homeScoreNum !== null && homeScoreNum > awayScoreNum;
+
+        return `
+          <article
+            data-game-id="${escapeHTML(game.id)}"
+            class="game-card group cursor-pointer rounded-2xl lp-surface lp-surface-interactive border p-4 transition-all duration-200 flex flex-col justify-between gap-3 ${hasActiveDelta ? 'score-pulse' : ''} ${isPinned ? 'ring-1 ring-amber-500/40' : ''}"
+          >
+            <!-- Top Metadata Bar -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-extrabold lp-chip shrink-0">
+                  ${game.leagueIcon} ${escapeHTML(game.league)}
+                </span>
+                ${isLive ? `
+                  <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-rose-500 truncate">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+                    ${escapeHTML(game.statusText)}
+                  </span>
+                ` : `
+                  <span class="text-xs font-bold lp-text-muted truncate">${escapeHTML(game.statusText)}</span>
+                `}
+              </div>
+
+              <!-- Quick Card Actions -->
+              <div class="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  data-action="pip"
+                  data-id="${escapeHTML(game.id)}"
+                  title="Open Picture-in-Picture Mini Scoreboard"
+                  class="p-1 rounded-lg transition text-xs font-bold ${state.pipGameId === game.id ? 'bg-emerald-500/20 text-emerald-500' : 'lp-text-faint hover:text-emerald-500 lp-row-hover'}"
+                >
+                  ⧉
+                </button>
+                ${!isFinal ? `
+                  <button
+                    type="button"
+                    data-action="alert"
+                    data-id="${escapeHTML(game.id)}"
+                    title="Toggle Crunch-Time Alert Bell"
+                    class="p-1 rounded-lg transition text-xs ${isWatched ? 'bg-emerald-500/20 text-emerald-500' : 'lp-text-faint hover:lp-text-primary lp-row-hover'}"
+                  >
+                    🔔
+                  </button>
+                ` : ''}
+                <button
+                  type="button"
+                  data-action="pin"
+                  data-id="${escapeHTML(game.id)}"
+                  title="${isPinned ? 'Unpin Matchup' : 'Pin Matchup to Top'}"
+                  class="p-1 rounded-lg transition text-sm leading-none ${isPinned ? 'text-amber-500' : 'lp-text-faint hover:text-amber-500 lp-row-hover'}"
+                >
+                  ${isPinned ? '★' : '☆'}
+                </button>
+              </div>
+            </div>
+
+            <!-- Team Rows -->
+            <div class="space-y-2.5">
+              <!-- Away Team -->
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  ${renderTeamLogo(game.away)}
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-sm font-extrabold truncate ${isFinal && !awayLeading ? 'lp-text-muted' : 'lp-text-primary'}">
+                        ${escapeHTML(game.away.shortName)}
+                      </span>
+                      <button
+                        type="button"
+                        data-action="fav-team"
+                        data-abbr="${escapeHTML(game.away.abbr)}"
+                        title="Favorite ${escapeHTML(game.away.shortName)}"
+                        class="text-xs leading-none transition ${awayFav ? 'text-amber-500' : 'lp-text-faint opacity-40 group-hover:opacity-100 hover:text-amber-500'}"
+                      >
+                        ${awayFav ? '★' : '☆'}
+                      </button>
+                    </div>
+                    ${game.away.record ? `<p class="text-[11px] lp-text-faint leading-none mt-0.5">${escapeHTML(game.away.record)}</p>` : ''}
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  ${awayDelta}
+                  <span class="text-lg font-black tabular-nums ${isFinal && !awayLeading ? 'lp-text-muted' : 'lp-text-primary'}">
+                    ${escapeHTML(String(game.away.score))}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Home Team -->
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  ${renderTeamLogo(game.home)}
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-sm font-extrabold truncate ${isFinal && !homeLeading ? 'lp-text-muted' : 'lp-text-primary'}">
+                        ${escapeHTML(game.home.shortName)}
+                      </span>
+                      <button
+                        type="button"
+                        data-action="fav-team"
+                        data-abbr="${escapeHTML(game.home.abbr)}"
+                        title="Favorite ${escapeHTML(game.home.shortName)}"
+                        class="text-xs leading-none transition ${homeFav ? 'text-amber-500' : 'lp-text-faint opacity-40 group-hover:opacity-100 hover:text-amber-500'}"
+                      >
+                        ${homeFav ? '★' : '☆'}
+                      </button>
+                    </div>
+                    ${game.home.record ? `<p class="text-[11px] lp-text-faint leading-none mt-0.5">${escapeHTML(game.home.record)}</p>` : ''}
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  ${homeDelta}
+                  <span class="text-lg font-black tabular-nums ${isFinal && !homeLeading ? 'lp-text-muted' : 'lp-text-primary'}">
+                    ${escapeHTML(String(game.home.score))}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Situation / Odds Footer -->
+            <div class="pt-2.5 border-t lp-border flex items-center justify-between gap-2 min-h-[28px]">
+              <div class="min-w-0 flex-1">
+                ${renderSituationHTML(game)}
+              </div>
+              ${game.broadcast ? `<span class="text-[10px] font-bold lp-text-faint uppercase shrink-0">${escapeHTML(game.broadcast)}</span>` : ''}
+            </div>
+          </article>
+        `;
+      }
+
+      // Build Compact Ticker Table Row HTML
+      function buildTickerRowHTML(game) {
+        const isLive = game.statusCategory === 'LIVE';
+        const isFinal = game.statusCategory === 'FINAL';
+        const isPinned = state.pinnedIds.has(game.id);
+        const isWatched = state.watchedIds.has(game.id);
+
+        return `
+          <tr data-game-id="${escapeHTML(game.id)}" class="game-card cursor-pointer lp-row-hover transition">
+            <td class="py-3 px-4 whitespace-nowrap font-bold lp-text-secondary">
+              ${game.leagueIcon} ${escapeHTML(game.league)}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              ${isLive
+                ? `<span class="inline-flex items-center gap-1.5 font-extrabold text-rose-500"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>${escapeHTML(game.statusText)}</span>`
+                : `<span class="font-semibold lp-text-muted">${escapeHTML(game.statusText)}</span>`}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap font-extrabold lp-text-primary">
+              ${escapeHTML(game.away.abbr)} <span class="lp-text-faint font-normal">@</span> ${escapeHTML(game.home.abbr)}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap text-right font-black tabular-nums lp-text-primary">
+              ${escapeHTML(String(game.away.score))} – ${escapeHTML(String(game.home.score))}
+            </td>
+            <td class="py-3 px-4 hidden md:table-cell max-w-xs truncate">
+              ${renderSituationHTML(game)}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap text-right">
+              <div class="inline-flex items-center gap-1.5">
+                <button type="button" data-action="pip" data-id="${escapeHTML(game.id)}" title="Mini PiP" class="p-1 rounded ${state.pipGameId === game.id ? 'text-emerald-500' : 'lp-text-faint hover:text-emerald-500'}">⧉</button>
+                ${!isFinal ? `<button type="button" data-action="alert" data-id="${escapeHTML(game.id)}" title="Toggle Alert" class="p-1 rounded ${isWatched ? 'text-emerald-500' : 'lp-text-faint hover:lp-text-primary'}">🔔</button>` : ''}
+                <button type="button" data-action="pin" data-id="${escapeHTML(game.id)}" title="Pin Game" class="p-1 rounded ${isPinned ? 'text-amber-500' : 'lp-text-faint hover:text-amber-500'}">${isPinned ? '★' : '☆'}</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      // Bind interactive actions inside rendered game containers
+      function bindCardEvents(container) {
+        if (!container) return;
+        container.querySelectorAll('.game-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            openGameModal(card.dataset.gameId);
+          });
+        });
+
+        container.querySelectorAll('[data-action="pin"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePinGame(btn.dataset.id);
+          });
+        });
+
+        container.querySelectorAll('[data-action="alert"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleWatchGame(btn.dataset.id);
+          });
+        });
+
+        container.querySelectorAll('[data-action="fav-team"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavoriteTeam(btn.dataset.abbr);
+          });
+        });
+
+        container.querySelectorAll('[data-action="pip"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPipMiniPlayer(btn.dataset.id);
+          });
+        });
+      }
+
+      // High-leverage Action Mode predicate
+      function isHighLeverageAction(game) {
+        if (game.statusCategory !== 'LIVE') return false;
+        if (game.isCrunchTime) return true;
+        if (game.situation?.isRedZone) return true;
+        if (game.situation?.type === 'hockey' && game.situation?.powerPlayTeam) return true;
+        const st = (game.statusText || '').toLowerCase();
+        return st.includes('ot') || st.includes('overtime') || st.includes('10th') || st.includes('11th');
+      }
+
+      function isGameFavorite(game) {
+        return state.pinnedIds.has(game.id) ||
+               state.favoriteTeams.has(game.away.abbr) ||
+               state.favoriteTeams.has(game.home.abbr);
+      }
+
+      // Render Pinned Matchups Section
+      function renderPinnedSection() {
+        const pinnedGames = state.games.filter(g => state.pinnedIds.has(g.id));
+        if (pinnedGames.length === 0) {
+          dom.pinnedSection.classList.add('hidden');
+          return;
+        }
+        dom.pinnedSection.classList.remove('hidden');
+        dom.pinnedCountBadge.textContent = String(pinnedGames.length);
+        dom.pinnedGrid.innerHTML = pinnedGames.map(buildGameCardHTML).join('');
+        bindCardEvents(dom.pinnedGrid);
+      }
+
+      // Render Main Scoreboard (Cards or Ticker)
+      function renderScoreboard() {
+        const q = state.searchQuery.trim().toLowerCase();
+        const filtered = state.games.filter(game => {
+          const matchesLeague = state.selectedLeague === 'ALL' || game.league === state.selectedLeague;
+          const matchesStatus =
+            state.selectedStatus === 'ALL' ||
+            (state.selectedStatus === 'FAVORITES'
+              ? isGameFavorite(game)
+              : state.selectedStatus === 'ACTION'
+              ? isHighLeverageAction(game)
+              : game.statusCategory === state.selectedStatus);
+          const matchesSearch = !q ||
+            game.away.name.toLowerCase().includes(q) ||
+            game.home.name.toLowerCase().includes(q) ||
+            game.away.abbr.toLowerCase().includes(q) ||
+            game.home.abbr.toLowerCase().includes(q) ||
+            game.league.toLowerCase().includes(q);
+          return matchesLeague && matchesStatus && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+          dom.grid.classList.add('hidden');
+          dom.tickerWrapper.classList.add('hidden');
+          dom.emptyState.classList.remove('hidden');
+          return;
+        }
+
+        dom.emptyState.classList.add('hidden');
+
+        if (state.viewMode === 'ticker') {
+          dom.grid.classList.add('hidden');
+          dom.tickerWrapper.classList.remove('hidden');
+          dom.tickerTbody.innerHTML = filtered.map(buildTickerRowHTML).join('');
+          bindCardEvents(dom.tickerTbody);
+        } else {
+          dom.tickerWrapper.classList.add('hidden');
+          dom.grid.classList.remove('hidden');
+          dom.grid.innerHTML = filtered.map(buildGameCardHTML).join('');
+          bindCardEvents(dom.grid);
+        }
+      }
+
+      function renderAll() {
+        try {
+          renderLeagueTabs();
+          renderPinnedSection();
+          renderScoreboard();
+        } catch (err) {
+          console.error('Render error:', err);
+          reportDiagnostic('Encountered a rendering issue. Click Reset to restore defaults.');
+        }
+      }
+
+      // Pin / Watch / Favorite State Toggles
+      function togglePinGame(gameId) {
+        if (state.pinnedIds.has(gameId)) {
+          state.pinnedIds.delete(gameId);
+        } else {
+          state.pinnedIds.add(gameId);
+        }
+        writeStorage('livepulse_pinned_games', Array.from(state.pinnedIds));
+        state.games = sortGames(state.games);
+        renderAll();
+        if (state.activeGameId === gameId) updateModalHeaderButtons(gameId);
+      }
+
+      function toggleWatchGame(gameId) {
+        if (state.watchedIds.has(gameId)) {
+          state.watchedIds.delete(gameId);
+          showToast({ title: 'Alert Disabled', message: 'Removed game from crunch-time alerts.', accent: 'amber', icon: '🔕' });
+        } else {
+          state.watchedIds.add(gameId);
+          showToast({ title: 'Crunch-Time Alert Active', message: 'You will hear a chime on score changes and late close games.', accent: 'emerald', icon: '🔔' });
+        }
+        writeStorage('livepulse_watched_games', Array.from(state.watchedIds));
+        renderAll();
+        if (state.activeGameId === gameId) updateModalHeaderButtons(gameId);
+      }
+
+      function toggleFavoriteTeam(abbr) {
+        if (state.favoriteTeams.has(abbr)) {
+          state.favoriteTeams.delete(abbr);
+        } else {
+          state.favoriteTeams.add(abbr);
+        }
+        writeStorage('livepulse_fav_teams', Array.from(state.favoriteTeams));
+        renderAll();
+      }
+
+      // Interactive Box Score Modal
+      function updateModalHeaderButtons(gameId) {
+        const isPinned = state.pinnedIds.has(gameId);
+        const isWatched = state.watchedIds.has(gameId);
+        dom.modalPinBtn.className = `p-1.5 rounded-xl transition ${isPinned ? 'bg-amber-500/20 text-amber-500' : 'lp-text-muted hover:text-amber-500 lp-row-hover'}`;
+        dom.modalAlertBtn.className = `p-1.5 rounded-xl transition ${isWatched ? 'bg-emerald-500/20 text-emerald-500' : 'lp-text-muted hover:text-emerald-500 lp-row-hover'}`;
+      }
+
+      function openGameModal(gameId) {
+        const game = state.games.find(g => g.id === gameId);
+        if (!game) return;
+        state.activeGameId = gameId;
+        dom.modalLeagueBadge.textContent = `${game.leagueIcon} ${game.league}`;
+        dom.modalStatusBadge.textContent = game.statusText;
+        updateModalHeaderButtons(gameId);
+        renderModalContent(game);
+        dom.modal.classList.remove('hidden');
+      }
+
+      function closeGameModal() {
+        state.activeGameId = null;
+        dom.modal.classList.add('hidden');
+      }
+
+      function renderModalContent(game) {
+        const bannerMid = state.theme === 'light' ? 'rgba(248, 250, 252, 0.94)' : 'rgba(15, 23, 42, 0.92)';
+
+        // Line Score Table
+        const maxPeriods = Math.max(game.away.linescores.length, game.home.linescores.length);
+        const lineScoreHTML = maxPeriods > 0 ? `
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider lp-text-muted mb-2">Line Score</h4>
+            <div class="rounded-xl lp-subtle border overflow-x-auto">
+              <table class="w-full text-xs text-center tabular-nums">
+                <thead>
+                  <tr class="border-b lp-border lp-text-muted">
+                    <th class="py-2 px-3 text-left font-bold">Team</th>
+                    ${Array.from({ length: maxPeriods }, (_, i) => `<th class="py-2 px-2 font-semibold">${i + 1}</th>`).join('')}
+                    <th class="py-2 px-3 font-extrabold lp-text-primary">T</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y lp-border">
+                  <tr>
+                    <td class="py-2 px-3 text-left font-extrabold lp-text-primary">${escapeHTML(game.away.abbr)}</td>
+                    ${Array.from({ length: maxPeriods }, (_, i) => `<td class="py-2 px-2 lp-text-secondary">${escapeHTML(String(game.away.linescores[i] ?? '-'))}</td>`).join('')}
+                    <td class="py-2 px-3 font-black lp-text-primary">${escapeHTML(String(game.away.score))}</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-3 text-left font-extrabold lp-text-primary">${escapeHTML(game.home.abbr)}</td>
+                    ${Array.from({ length: maxPeriods }, (_, i) => `<td class="py-2 px-2 lp-text-secondary">${escapeHTML(String(game.home.linescores[i] ?? '-'))}</td>`).join('')}
+                    <td class="py-2 px-3 font-black lp-text-primary">${escapeHTML(String(game.home.score))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : '';
+
+        // Win Probability Bar
+        const winProbHTML = game.winProb ? `
+          <div class="rounded-xl lp-subtle border p-3.5 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span style="color:${escapeHTML(game.away.color)}">${escapeHTML(game.away.abbr)} ${game.winProb.away}%</span>
+              <span class="text-[11px] uppercase tracking-wider lp-text-muted">Win Probability</span>
+              <span style="color:${escapeHTML(game.home.color)}">${game.winProb.home}% ${escapeHTML(game.home.abbr)}</span>
+            </div>
+            <div class="h-2.5 w-full rounded-full overflow-hidden flex lp-chip">
+              <div style="width:${game.winProb.away}%; background-color:${escapeHTML(game.away.color)}" class="h-full transition-all duration-500"></div>
+              <div style="width:${game.winProb.home}%; background-color:${escapeHTML(game.home.color)}" class="h-full transition-all duration-500"></div>
+            </div>
+          </div>
+        ` : '';
+
+        // Team Comparison Stats
+        const hasStats = game.away.stats.length > 0 && game.home.stats.length > 0;
+        const statsHTML = hasStats ? `
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider lp-text-muted mb-2">Team Statistics</h4>
+            <div class="rounded-xl lp-subtle border divide-y lp-border">
+              ${game.away.stats.map((st, idx) => {
+                const homeSt = game.home.stats[idx] || { value: '-' };
+                return `
+                  <div class="flex items-center justify-between px-4 py-2 text-xs tabular-nums">
+                    <span class="font-bold lp-text-primary w-1/3">${escapeHTML(st.value)}</span>
+                    <span class="lp-text-muted font-medium text-center w-1/3">${escapeHTML(st.label)}</span>
+                    <span class="font-bold lp-text-primary text-right w-1/3">${escapeHTML(homeSt.value)}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : '';
+
+        // Recent Plays & Scoring Feed
+        const playsHTML = Array.isArray(game.plays) && game.plays.length > 0 ? `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider lp-text-muted">Recent Plays & Scoring Feed</h4>
+              <span class="text-[11px] lp-text-faint">${game.plays.length} recent events</span>
+            </div>
+            <div class="rounded-xl lp-subtle border divide-y lp-border max-h-48 overflow-y-auto">
+              ${game.plays.map(play => `
+                <div class="px-3.5 py-2.5 text-xs flex items-start gap-2.5 ${play.isScoring ? 'bg-emerald-500/10' : ''}">
+                  <div class="shrink-0 flex flex-col items-center gap-1 min-w-[52px]">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold lp-chip">${escapeHTML(play.team || game.league)}</span>
+                    ${play.time ? `<span class="text-[10px] lp-text-faint tabular-nums">${escapeHTML(play.time)}</span>` : ''}
+                  </div>
+                  <p class="lp-text-primary leading-relaxed flex-1 ${play.isScoring ? 'font-semibold' : ''}">
+                    ${play.isScoring ? '<span class="text-emerald-500 mr-1">🔥</span>' : ''}${escapeHTML(play.text)}
+                  </p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : '';
+
+        dom.modalBody.innerHTML = `
+          <!-- Team Scoreboard Banner -->
+          <div style="background: linear-gradient(135deg, ${escapeHTML(game.away.color)}33 0%, ${bannerMid} 50%, ${escapeHTML(game.home.color)}33 100%);" class="rounded-2xl border lp-border p-4 sm:p-5">
+            <div class="grid grid-cols-3 items-center gap-2 text-center">
+              <!-- Away -->
+              <div class="flex flex-col items-center gap-1.5">
+                ${renderTeamLogo(game.away)}
+                <p class="text-sm font-extrabold lp-text-primary">${escapeHTML(game.away.name)}</p>
+                <p class="text-[11px] lp-text-muted">${escapeHTML(game.away.record)}</p>
+                <p class="text-3xl font-black lp-text-primary tabular-nums mt-1">${escapeHTML(String(game.away.score))}</p>
+              </div>
+              <!-- Center Status -->
+              <div class="space-y-1.5">
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs font-extrabold lp-chip">
+                  ${escapeHTML(game.periodDetail)}
+                </span>
+                ${renderSituationHTML(game)}
+              </div>
+              <!-- Home -->
+              <div class="flex flex-col items-center gap-1.5">
+                ${renderTeamLogo(game.home)}
+                <p class="text-sm font-extrabold lp-text-primary">${escapeHTML(game.home.name)}</p>
+                <p class="text-[11px] lp-text-muted">${escapeHTML(game.home.record)}</p>
+                <p class="text-3xl font-black lp-text-primary tabular-nums mt-1">${escapeHTML(String(game.home.score))}</p>
+              </div>
+            </div>
+          </div>
+
+          ${winProbHTML}
+          ${lineScoreHTML}
+          ${playsHTML}
+          ${statsHTML}
+
+          <!-- Venue / Broadcast / Odds Footer -->
+          <div class="rounded-xl lp-subtle border p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs lp-text-muted">
+            ${game.venue ? `<span>📍 ${escapeHTML(game.venue)}</span>` : ''}
+            ${game.broadcast ? `<span>📺 ${escapeHTML(game.broadcast)}</span>` : ''}
+            ${game.odds ? `<span>📊 ${escapeHTML(game.odds)}</span>` : ''}
+          </div>
+        `;
+      }
+
+      // Picture-in-Picture Mini Scoreboard (Floating Draggable + Browser Document PiP)
+      function openPipMiniPlayer(gameId) {
+        state.pipGameId = gameId;
+        dom.pipMiniPlayer.classList.remove('hidden');
+        renderPipMiniPlayer();
+        renderAll();
+      }
+
+      function closePipMiniPlayer() {
+        state.pipGameId = null;
+        dom.pipMiniPlayer.classList.add('hidden');
+        if (state.nativePipWindow && !state.nativePipWindow.closed) {
+          try { state.nativePipWindow.close(); } catch (e) {}
+        }
+        state.nativePipWindow = null;
+        renderAll();
+      }
+
+      function renderPipMiniPlayer() {
+        if (!state.pipGameId) return;
+        const game = state.games.find(g => g.id === state.pipGameId);
+        if (!game) {
+          closePipMiniPlayer();
+          return;
+        }
+
+        dom.pipLeagueStatus.textContent = `${game.leagueIcon} ${game.league} • ${game.statusText}`;
+        const sitNote = game.situation?.downDistance ||
+          (game.situation?.type === 'baseball' ? `Count ${game.situation.balls}-${game.situation.strikes} • ${game.situation.outs} Outs` : '') ||
+          (game.situation?.type === 'hockey' ? 'Power Play Active' : '');
+
+        dom.pipBody.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                ${renderTeamLogo(game.away)}
+                <span class="text-xs font-extrabold lp-text-primary">${escapeHTML(game.away.abbr)}</span>
+                <span class="text-[11px] lp-text-faint">${escapeHTML(game.away.record)}</span>
+              </div>
+              <span class="text-base font-black lp-text-primary tabular-nums">${escapeHTML(String(game.away.score))}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                ${renderTeamLogo(game.home)}
+                <span class="text-xs font-extrabold lp-text-primary">${escapeHTML(game.home.abbr)}</span>
+                <span class="text-[11px] lp-text-faint">${escapeHTML(game.home.record)}</span>
+              </div>
+              <span class="text-base font-black lp-text-primary tabular-nums">${escapeHTML(String(game.home.score))}</span>
+            </div>
+            ${sitNote ? `<div class="pt-1.5 border-t lp-border text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 truncate">${escapeHTML(sitNote)}</div>` : ''}
+          </div>
+        `;
+
+        if (state.nativePipWindow && !state.nativePipWindow.closed) {
+          const container = state.nativePipWindow.document.getElementById('native-pip-root');
+          if (container) {
+            container.innerHTML = `
+              <div style="font-family: system-ui, sans-serif; background:#0f172a; color:#f8fafc; padding:14px; height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:space-between;">
+                <div style="font-size:11px; font-weight:700; color:#fb7185;">${escapeHTML(game.leagueIcon)} ${escapeHTML(game.league)} &bull; ${escapeHTML(game.statusText)}</div>
+                <div style="display:flex; flex-direction:column; gap:8px; margin:8px 0;">
+                  <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800;">
+                    <span>${escapeHTML(game.away.shortName)}</span>
+                    <span>${escapeHTML(String(game.away.score))}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800;">
+                    <span>${escapeHTML(game.home.shortName)}</span>
+                    <span>${escapeHTML(String(game.home.score))}</span>
+                  </div>
+                </div>
+                <div style="font-size:11px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(sitNote || game.headline || '')}</div>
+              </div>
+            `;
+          }
+        }
+      }
+
+      async function launchNativeDocumentPip() {
+        if (!('documentPictureInPicture' in window)) {
+          showToast({
+            title: 'Floating Mini-Player Active',
+            message: 'Drag the corner mini-scoreboard anywhere on the screen! (Native OS PiP requires Chrome/Edge desktop).',
+            accent: 'emerald',
+            icon: '⧉'
+          });
+          return;
+        }
+        try {
+          const pipWin = await window.documentPictureInPicture.requestWindow({ width: 310, height: 165 });
+          pipWin.document.body.style.margin = '0';
+          pipWin.document.body.innerHTML = '<div id="native-pip-root"></div>';
+          state.nativePipWindow = pipWin;
+          pipWin.addEventListener('pagehide', () => { state.nativePipWindow = null; });
+          renderPipMiniPlayer();
+        } catch (e) {
+          showToast({
+            title: 'Floating Mini-Player Active',
+            message: 'Drag the corner mini-scoreboard anywhere on the screen.',
+            accent: 'amber',
+            icon: '⧉'
+          });
+        }
+      }
+
+      function initPipDragging() {
+        let dragging = false;
+        let startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+        const startDrag = (x, y) => {
+          dragging = true;
+          const rect = dom.pipMiniPlayer.getBoundingClientRect();
+          dom.pipMiniPlayer.style.left = `${rect.left}px`;
+          dom.pipMiniPlayer.style.top = `${rect.top}px`;
+          dom.pipMiniPlayer.style.bottom = 'auto';
+          dom.pipMiniPlayer.style.right = 'auto';
+          startX = x;
+          startY = y;
+          origLeft = rect.left;
+          origTop = rect.top;
+        };
+
+        const moveDrag = (x, y) => {
+          if (!dragging) return;
+          const maxL = window.innerWidth - dom.pipMiniPlayer.offsetWidth - 8;
+          const maxT = window.innerHeight - dom.pipMiniPlayer.offsetHeight - 8;
+          dom.pipMiniPlayer.style.left = `${Math.max(8, Math.min(maxL, origLeft + (x - startX)))}px`;
+          dom.pipMiniPlayer.style.top = `${Math.max(8, Math.min(maxT, origTop + (y - startY)))}px`;
+        };
+
+        dom.pipDragHandle.addEventListener('mousedown', (e) => {
+          if (!e.target.closest('button')) startDrag(e.clientX, e.clientY);
+        });
+        window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+        window.addEventListener('mouseup', () => { dragging = false; });
+
+        dom.pipDragHandle.addEventListener('touchstart', (e) => {
+          if (!e.target.closest('button') && e.touches[0]) startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+        window.addEventListener('touchmove', (e) => {
+          if (dragging && e.touches[0]) moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+        window.addEventListener('touchend', () => { dragging = false; });
+      }
+
+      // Customize Leagues Modal
+      function openLeaguesModal() {
+        renderLeaguesConfigList();
+        dom.leaguesModal.classList.remove('hidden');
+      }
+
+      function closeLeaguesModal() {
+        dom.leaguesModal.classList.add('hidden');
+        writeStorage('livepulse_leagues_v1', state.leagues.map(l => ({ key: l.key, visible: l.visible })));
+        if (state.selectedLeague !== 'ALL' && !state.leagues.some(l => l.key === state.selectedLeague && l.visible)) {
+          state.selectedLeague = 'ALL';
+        }
+        renderAll();
+      }
+
+      function renderLeaguesConfigList() {
+        dom.leaguesConfigList.innerHTML = state.leagues.map((lg, idx) => `
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl lp-subtle border">
+            <label class="flex items-center gap-2.5 cursor-pointer select-none">
+              <input type="checkbox" data-lg-toggle="${idx}" ${lg.visible ? 'checked' : ''} class="rounded accent-emerald-500 w-4 h-4" />
+              <span class="text-xs font-bold lp-text-primary">${lg.icon} ${escapeHTML(lg.label)}</span>
+            </label>
+            <div class="flex items-center gap-1">
+              <button type="button" data-lg-up="${idx}" ${idx === 0 ? 'disabled' : ''} class="px-2 py-1 rounded-lg lp-chip text-xs font-bold disabled:opacity-30">▲</button>
+              <button type="button" data-lg-down="${idx}" ${idx === state.leagues.length - 1 ? 'disabled' : ''} class="px-2 py-1 rounded-lg lp-chip text-xs font-bold disabled:opacity-30">▼</button>
+            </div>
+          </div>
+        `).join('');
+
+        dom.leaguesConfigList.querySelectorAll('[data-lg-toggle]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const idx = Number(cb.dataset.lgToggle);
+            state.leagues[idx].visible = cb.checked;
+          });
+        });
+
+        dom.leaguesConfigList.querySelectorAll('[data-lg-up]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.dataset.lgUp);
+            if (idx > 0) {
+              const temp = state.leagues[idx - 1];
+              state.leagues[idx - 1] = state.leagues[idx];
+              state.leagues[idx] = temp;
+              renderLeaguesConfigList();
+            }
+          });
+        });
+
+        dom.leaguesConfigList.querySelectorAll('[data-lg-down]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.dataset.lgDown);
+            if (idx < state.leagues.length - 1) {
+              const temp = state.leagues[idx + 1];
+              state.leagues[idx + 1] = state.leagues[idx];
+              state.leagues[idx] = temp;
+              renderLeaguesConfigList();
+            }
+          });
+        });
+      }
+
+      // Date Navigation Helpers
+      function shiftDate(days) {
+        const parts = state.selectedDate.split('-').map(Number);
+        const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+        dt.setDate(dt.getDate() + days);
+        state.selectedDate = formatDateISO(dt);
+        dom.datePicker.value = state.selectedDate;
+        fetchScores(true);
+      }
+
+      // Layout View Mode Switcher
+      function applyViewMode(mode) {
+        state.viewMode = mode === 'ticker' ? 'ticker' : 'grid';
+        writeStorage('livepulse_view_mode', state.viewMode);
+        if (state.viewMode === 'ticker') {
+          dom.viewTickerBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 transition';
+          dom.viewGridBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold lp-text-muted transition';
+        } else {
+          dom.viewGridBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 transition';
+          dom.viewTickerBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold lp-text-muted transition';
+        }
+        renderScoreboard();
+      }
+
+      function updateSoundButtonUI() {
+        if (state.soundEnabled) {
+          dom.soundOnIcon.classList.remove('hidden');
+          dom.soundOffIcon.classList.add('hidden');
+        } else {
+          dom.soundOnIcon.classList.add('hidden');
+          dom.soundOffIcon.classList.remove('hidden');
+        }
+      }
+
+      // Bind All Event Listeners
+      function bindEvents() {
+        // Theme Switch
+        dom.themeLightBtn.addEventListener('click', () => setTheme('light'));
+        dom.themeDarkBtn.addEventListener('click', () => setTheme('dark'));
+
+        // Diagnostic Reset
+        dom.diagnosticResetBtn.addEventListener('click', () => {
+          try { localStorage.clear(); } catch (e) {}
+          location.reload();
+        });
+
+        // Header Controls
+        dom.simulateScoreBtn.addEventListener('click', simulateLiveScoreAction);
+        dom.soundToggleBtn.addEventListener('click', () => {
+          state.soundEnabled = !state.soundEnabled;
+          writeStorage('livepulse_sound', state.soundEnabled);
+          updateSoundButtonUI();
+          if (state.soundEnabled) playAlertChime('score');
+        });
+
+        dom.autoRefreshToggle.addEventListener('click', () => {
+          state.autoRefresh = !state.autoRefresh;
+          if (state.autoRefresh) {
+            state.countdown = 30;
+            dom.autoRefreshToggle.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 transition inline-flex items-center gap-1.5';
+            dom.countdownBadge.textContent = '30s';
+          } else {
+            dom.autoRefreshToggle.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold lp-surface border lp-text-muted transition inline-flex items-center gap-1.5';
+            dom.countdownBadge.textContent = 'OFF';
+          }
+        });
+
+        dom.refreshBtn.addEventListener('click', () => fetchScores(true));
+        dom.retryLiveBtn.addEventListener('click', () => fetchScores(true));
+
+        // Date Controls
+        dom.prevDayBtn.addEventListener('click', () => shiftDate(-1));
+        dom.nextDayBtn.addEventListener('click', () => shiftDate(1));
+        dom.todayBtn.addEventListener('click', () => {
+          state.selectedDate = getTodayISO();
+          dom.datePicker.value = state.selectedDate;
+          fetchScores(true);
+        });
+        dom.datePicker.addEventListener('change', () => {
+          if (dom.datePicker.value) {
+            state.selectedDate = dom.datePicker.value;
+            fetchScores(true);
+          }
+        });
+
+        // Status Pills
+        dom.statusPills.forEach(pill => {
+          pill.addEventListener('click', () => {
+            state.selectedStatus = pill.dataset.status;
+            dom.statusPills.forEach(p => {
+              const active = p === pill;
+              const flex = p.dataset.status === 'LIVE' || p.dataset.status === 'ACTION' || p.dataset.status === 'FAVORITES';
+              p.className = active
+                ? `status-pill active ${flex ? 'flex items-center gap-1.5' : ''} px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 transition shrink-0`
+                : `status-pill ${flex ? 'flex items-center gap-1.5' : ''} px-3.5 py-1.5 rounded-full text-xs font-semibold lp-surface lp-text-muted border transition shrink-0`;
+            });
+            renderScoreboard();
+          });
+        });
+
+        // Search Input
+        dom.searchInput.addEventListener('input', () => {
+          state.searchQuery = dom.searchInput.value;
+          dom.clearSearchBtn.classList.toggle('hidden', !state.searchQuery);
+          renderScoreboard();
+        });
+        dom.clearSearchBtn.addEventListener('click', () => {
+          state.searchQuery = '';
+          dom.searchInput.value = '';
+          dom.clearSearchBtn.classList.add('hidden');
+          renderScoreboard();
+        });
+
+        // Reset Filters Button
+        dom.resetFiltersBtn.addEventListener('click', () => {
+          state.selectedLeague = 'ALL';
+          state.selectedStatus = 'ALL';
+          state.searchQuery = '';
+          dom.searchInput.value = '';
+          dom.clearSearchBtn.classList.add('hidden');
+          dom.statusPills[0].click();
+          renderLeagueTabs();
+        });
+
+        // View Switcher
+        dom.viewGridBtn.addEventListener('click', () => applyViewMode('grid'));
+        dom.viewTickerBtn.addEventListener('click', () => applyViewMode('ticker'));
+
+        // Clear Pins
+        dom.clearPinsBtn.addEventListener('click', () => {
+          state.pinnedIds.clear();
+          writeStorage('livepulse_pinned_games', []);
+          state.games = sortGames(state.games);
+          renderAll();
+        });
+
+        // Box Score Modal Controls
+        dom.closeModalBtn.addEventListener('click', closeGameModal);
+        dom.modalBackdrop.addEventListener('click', closeGameModal);
+        dom.modalPipBtn.addEventListener('click', () => {
+          if (state.activeGameId) openPipMiniPlayer(state.activeGameId);
+        });
+        dom.modalPinBtn.addEventListener('click', () => {
+          if (state.activeGameId) togglePinGame(state.activeGameId);
+        });
+        dom.modalAlertBtn.addEventListener('click', () => {
+          if (state.activeGameId) toggleWatchGame(state.activeGameId);
+        });
+
+        // PiP Mini Player Controls
+        initPipDragging();
+        dom.pipCloseBtn.addEventListener('click', closePipMiniPlayer);
+        dom.pipNativeBtn.addEventListener('click', launchNativeDocumentPip);
+        dom.pipExpandBtn.addEventListener('click', () => {
+          if (state.pipGameId) openGameModal(state.pipGameId);
+        });
+        dom.pipBody.addEventListener('click', () => {
+          if (state.pipGameId) openGameModal(state.pipGameId);
+        });
+
+        // Customize Leagues Modal Controls
+        dom.customizeLeaguesBtn.addEventListener('click', openLeaguesModal);
+        dom.closeLeaguesModalBtn.addEventListener('click', closeLeaguesModal);
+        dom.leaguesModalBackdrop.addEventListener('click', closeLeaguesModal);
+        dom.doneLeaguesBtn.addEventListener('click', closeLeaguesModal);
+        dom.resetLeaguesBtn.addEventListener('click', () => {
+          state.leagues = DEFAULT_LEAGUES.map(l => ({ ...l }));
+          renderLeaguesConfigList();
+        });
+
+        // Shortcuts Modal Controls
+        dom.shortcutsHelpBtn.addEventListener('click', () => dom.shortcutsModal.classList.remove('hidden'));
+        dom.footerShortcutsBtn.addEventListener('click', () => dom.shortcutsModal.classList.remove('hidden'));
+        dom.closeShortcutsBtn.addEventListener('click', () => dom.shortcutsModal.classList.add('hidden'));
+        dom.shortcutsBackdrop.addEventListener('click', () => dom.shortcutsModal.classList.add('hidden'));
+
+        // Global Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+          const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+
+          if (e.key === 'Escape') {
+            if (isTyping) {
+              document.activeElement.blur();
+              return;
+            }
+            if (!dom.shortcutsModal.classList.contains('hidden')) {
+              dom.shortcutsModal.classList.add('hidden');
+            } else if (!dom.modal.classList.contains('hidden')) {
+              closeGameModal();
+            } else if (!dom.leaguesModal.classList.contains('hidden')) {
+              closeLeaguesModal();
+            } else if (state.pipGameId) {
+              closePipMiniPlayer();
+            }
+            return;
+          }
+
+          if (isTyping || e.metaKey || e.ctrlKey || e.altKey) return;
+
+          if (e.key === '/') {
+            e.preventDefault();
+            dom.searchInput.focus();
+            dom.searchInput.select();
+          } else if (e.key === '?') {
+            e.preventDefault();
+            dom.shortcutsModal.classList.toggle('hidden');
+          } else if (e.key.toLowerCase() === 'r') {
+            e.preventDefault();
+            fetchScores(true);
+          } else if (e.key.toLowerCase() === 't') {
+            e.preventDefault();
+            setTheme(state.theme === 'dark' ? 'light' : 'dark');
+          } else if (e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            const actionPill = Array.from(dom.statusPills).find(p => p.dataset.status === 'ACTION');
+            if (actionPill) actionPill.click();
+          } else if (e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            simulateLiveScoreAction();
+          } else if (e.key >= '1' && e.key <= '8') {
+            const idx = Number(e.key) - 1;
+            const btns = dom.leagueTabsContainer.querySelectorAll('button[data-league]');
+            if (btns[idx]) {
+              e.preventDefault();
+              btns[idx].click();
+            }
+          }
+        });
+
+        // 30-second Auto-Refresh Countdown Loop
+        setInterval(() => {
+          if (!state.autoRefresh) return;
+          state.countdown -= 1;
+          if (state.countdown <= 0) {
+            state.countdown = 30;
+            dom.countdownBadge.textContent = '30s';
+            fetchScores(false);
+          } else {
+            dom.countdownBadge.textContent = `${state.countdown}s`;
+          }
+        }, 1000);
+      }
+
+      // Initialize Application safely on DOMContentLoaded
+      function initApp() {
+        try {
+          setTheme(state.theme);
+          updateSoundButtonUI();
+          dom.datePicker.value = state.selectedDate;
+          applyViewMode(state.viewMode);
+          bindEvents();
+          fetchScores(false);
+        } catch (err) {
+          console.error('Initialization failed:', err);
+          reportDiagnostic('LivePulse encountered an initialization error. Loading backup scoreboard.');
+          dom.loadingGrid.classList.add('hidden');
+          state.games = sortGames(getFallbackGames(getTodayISO()));
+          renderAll();
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+      } else {
+        initApp();
+      }
+    })();
+  </script>
+</body>
+</html>
